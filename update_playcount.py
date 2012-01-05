@@ -8,11 +8,11 @@ import re
 import codecs
 
 import shutil
-import os
+import os, platform
 
 from optparse import OptionParser
 import logging
-from logging import info,warning,error
+from logging import info,warning,error,debug
 
 from lastexport_corrected import main as lastexporter
 
@@ -116,7 +116,18 @@ if __name__ == "__main__":
     options, args = parser.parse_args()
     if options.verbose:
         logging.basicConfig(level="INFO")
+    if options.debug:
+        logging.basicConfig(level="DEBUG")
+        
     username= args[0]
+    operating_system = platform.system()
+    if operating_system == 'Linux':
+        db_path = '~/.config/Clementine/'
+    if operating_system == 'Darwin':
+        db_path = '~/Library/Application Support/Clementine/'
+    if operating_system == 'Windows':
+        db_path = '%USERPROFILE%\\.config\\Clementine\\'''
+    
     if options.input_file == None:
         info("No input file given, extracting directly from %s servers" %options.server)
         #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
@@ -126,13 +137,13 @@ if __name__ == "__main__":
 
     if options.backup:
         info("Backing up database into clementine_backup.db")
-        shutil.copy(os.path.expanduser("~/.config/Clementine/clementine.db"), os.path.expanduser("~/.config/Clementine/clementine_backup.db"))
+        shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
     
     info("Reading extract file and updating database")    
-    matched, not_matched = update_db_file(os.path.expanduser("~/.config/Clementine/clementine.db"), options.extract_file)
+    matched, not_matched = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
     
     info("%d entries have been updated\nNo match was found for %d entries" %(len(matched), len(not_matched)))
     if options.debug == True:
         for element in sorted(not_matched):
-            print element
+            debug(element)
 
