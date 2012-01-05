@@ -129,7 +129,7 @@ if __name__ == "__main__":
         shutil.copy(os.path.expanduser("~/.config/Clementine/clementine.db"), os.path.expanduser("~/.config/Clementine/clementine_backup.db"))
     
     info("Reading extract file and updating database")    
-    matched, not_matched = update_db_file(os.path.expanduser("~/.config/Clementine/clementine_test.db"), options.extract_file)
+    matched, not_matched = update_db_file(os.path.expanduser("~/.config/Clementine/clementine.db"), options.extract_file)
     
     info("%d entries have been updated\nNo match was found for %d entries" %(len(matched), len(not_matched)))
     if options.debug == True:
