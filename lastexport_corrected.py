@@ -15,6 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Modifications made from original lastexport.py script:
+# 2012-01-05 - Vincent Verdeil <vincent.verdeil@gmail.com>
+#   - Add server argument to methods connect_server, main
 """
 Script for exporting tracks through audioscrobbler API.
 Usage: lastexport.py -u USER [-o OUTFILE] [-p STARTPAGE] [-s SERVER]
