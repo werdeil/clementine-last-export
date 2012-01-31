@@ -37,19 +37,21 @@ from lastexport_corrected import main as lastexporter
 
 def is_in_db(connection,artist,title):
     """
-    Return False if the track is not found in the database
+    Return playcount if the track is in the database, -1 if it is not the case
     """
-    is_present = False
+    playcount = -1
     curseur = connection.cursor()
-    curseur.execute("""SELECT * FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
-    if len(curseur.fetchall())>0:
-        is_present = True
+    curseur.execute("""SELECT playcount FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
+    result = curseur.fetchall()
+    if len(result)>0:
+        playcount = result[0][0]
     else:
-        curseur.execute("""SELECT * FROM songs WHERE title LIKE ? AND artist LIKE ? """ ,(title, artist))
-        if len(curseur.fetchall())>0:
-            is_present = True
+        curseur.execute("""SELECT playcount FROM songs WHERE title LIKE ? AND artist LIKE ? """ ,(title, artist))
+        result = curseur.fetchall()
+        if len(result)>0:
+            playcount = result[0][0]
     curseur.close()
-    return is_present
+    return playcount
 
 def update_playcount(connection,artist,title,playcount):
     """
@@ -93,11 +95,12 @@ def update_db_file(database, extract):
     #Loop which will try to update the database with each entry of the dictionnary           
     for artiste in biblio.keys():
         for titre in biblio[artiste].keys():
-            if is_in_db(connection, artiste, titre) == True:
+            original_playcount = is_in_db(connection, artiste, titre)
+            if original_playcount == -1:
+                not_matched.append(artiste+' '+titre)
+            elif original_playcount < biblio[artiste][titre]:
                 update_playcount(connection, artiste, titre, biblio[artiste][titre])
                 matched.append(artiste+' '+titre)
-            else:
-                not_matched.append(artiste+' '+titre)
     try:
         connection.commit()
     except sqlite3.Error, err:
