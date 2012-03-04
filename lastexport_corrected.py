@@ -66,12 +66,16 @@ def connect_server(username, startpage, server):
 
 
     url = baseurl + urllib.urlencode(urlvars)
-    try:
-        f = urllib2.urlopen(url)
-    except:
-        print "Failed to open page %s" % urlvars['page']
-        response = None
-        return response
+
+    for i in range(20): #5 attempts before giving up
+        try:
+            f = urllib2.urlopen(url)
+            break
+        except:
+            if i == 19:
+                print "Failed to open page %s" % urlvars['page']
+                response = None
+                return response
 
     response = f.read()
     f.close()
