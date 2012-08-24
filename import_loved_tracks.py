@@ -1,0 +1,167 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Script which allows to gives 5 stars in the Clementine database for last.fm loved tracks
+"""
+
+import sqlite3
+import re
+import codecs
+
+import shutil
+import os, platform
+
+from optparse import OptionParser
+import logging
+from logging import info,warning,error,debug
+
+from lastexport import main as lastexporter
+
+#########################################################################
+#    Functions
+#########################################################################
+
+def is_in_db(connection,artist,title):
+    """
+    Return note of the track if it is in the database, -1 if it is not the case
+    """
+    rating = "none"
+    curseur = connection.cursor()
+    curseur.execute("""SELECT rating FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
+    result = curseur.fetchall()
+    if len(result)>0:
+        rating = result[0][0]
+    else:
+        curseur.execute("""SELECT rating FROM songs WHERE title LIKE ? AND artist LIKE ? """ ,(title, artist))
+        result = curseur.fetchall()
+        if len(result)>0:
+            rating = result[0][0]
+    curseur.close()
+    return rating
+
+def update_rating(connection,artist,title,rating):
+    """
+    Update rating of the given title
+    """
+    curseur = connection.cursor()
+    curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(rating),title, artist))
+    curseur.close()
+    debug("""Rating of %s from %s has been updated to %d""" %(title, artist, int(rating)))
+
+def parse_line(ligne):
+    """
+    Read a last.fm extract line and return the artist and song part
+    """
+    regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
+    titre,artiste = regexp.findall(ligne)[0]
+    return titre, artiste
+
+def update_db_file(database, extract):
+    """
+    Update a database according to an extract file
+    """
+    connection = sqlite3.connect(database)
+    extract_file = codecs.open(extract, encoding='utf-8')
+    biblio = {}    
+    matched = []
+    not_matched = []
+        
+    #Loop which will read the extract and store each play to a dictionary
+    for line in extract_file.readlines():
+        titre, artiste = parse_line(line)
+        if biblio.has_key(artiste):
+            if biblio[artiste].has_key(titre):
+                biblio[artiste][titre] = biblio[artiste][titre] +1
+            else:
+                biblio[artiste][titre] = 1
+        else:
+            biblio[artiste] = {}
+            biblio[artiste][titre] = 1
+            
+    #Loop which will try to update the database with each entry of the dictionnary           
+    for artiste in biblio.keys():
+        for titre in biblio[artiste].keys():
+            original_rating = is_in_db(connection, artiste, titre)
+            if original_rating == "none":
+                not_matched.append(artiste+' '+titre)
+            elif original_rating < 1:
+                update_rating(connection, artiste, titre, 1)
+                matched.append(artiste+' '+titre)
+    try:
+        connection.commit()
+    except sqlite3.Error, err:
+        connection.rollback()
+        error(unicode(err.args[0]))            
+        
+    extract_file.close()
+    connection.close()
+    return matched, not_matched
+    
+#######################################################################
+#    Main
+#######################################################################
+
+if __name__ == "__main__":
+    parser = OptionParser()
+    parser.usage = """Usage: %prog <username> [options]
+    
+    Script which will extract data from the server and update clementine database
+    <username> .......... Username used in the server
+    """
+
+    parser.add_option("-p", "--page", dest="startpage", type="int", default="1", help="page to start fetching tracks from, default is 1")
+    parser.add_option("-e", "--extract-file", dest="extract_file", default="loved_tracks.txt", help="extract file name, default is loved_tracks.txt")
+    parser.add_option("-s", "--server", dest="server", default="last.fm", help="server to fetch track info from, default is last.fm")
+    parser.add_option("-b", "--backup", dest="backup", default=False, action="store_true", help="backup db first")
+    parser.add_option("-i", "--input-file", dest="input_file", default=None, help="give already extracted file as input")
+    parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
+    parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
+    
+    options, args = parser.parse_args()
+    if options.verbose:
+        logging.basicConfig(level="INFO")
+    if options.debug:
+        logging.basicConfig(level="DEBUG")
+        
+    username= args[0]
+    operating_system = platform.system()
+    if operating_system == 'Linux':
+        db_path = '~/.config/Clementine/'
+    if operating_system == 'Darwin':
+        db_path = '~/Library/Application Support/Clementine/'
+    if operating_system == 'Windows':
+        db_path = '%USERPROFILE%\\.config\\Clementine\\'''
+    
+    if options.input_file == None:
+        info("No input file given, extracting directly from %s servers" %options.server)
+        #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
+        if os.path.exists(options.extract_file) and options.startpage == 1:
+            os.remove(options.extract_file)
+        lastexporter(options.server, username, options.startpage, options.extract_file, infotype='lovedtracks')
+
+    if options.backup:
+        info("Backing up database into clementine_backup.db")
+        shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
+    
+    info("Reading extract file and updating database")    
+    matched, not_matched = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
+    
+    info("%d entries have been updated\nNo match was found for %d entries" %(len(matched), len(not_matched)))
+    if options.debug == True:
+        for element in sorted(not_matched):
+            debug(element)
+
