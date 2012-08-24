@@ -29,7 +29,7 @@ from optparse import OptionParser
 import logging
 from logging import info,warning,error,debug
 
-from lastexport_corrected import main as lastexporter
+from lastexport import main as lastexporter
 
 #########################################################################
 #    Functions
@@ -151,7 +151,7 @@ if __name__ == "__main__":
         #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
         if os.path.exists(options.extract_file) and options.startpage == 1:
             os.remove(options.extract_file)
-        lastexporter(username, options.startpage, options.extract_file, options.server)
+        lastexporter(options.server, username, options.startpage, options.extract_file, infotype='recenttracks')
 
     if options.backup:
         info("Backing up database into clementine_backup.db")
