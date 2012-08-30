@@ -60,14 +60,17 @@ def update_playcount(connection,artist,title,playcount):
     curseur = connection.cursor()
     curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount),title, artist))
     curseur.close()
-    debug("""Playcount of %s from %s has been updated to %d""" %(title, artist, int(playcount)))
 
 def parse_line(ligne):
     """
     Read a last.fm extract line and return the artist and song part
     """
     regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
-    titre,artiste = regexp.findall(ligne)[0]
+    if regexp.match(ligne):
+        titre,artiste = regexp.findall(ligne)[0]
+    else:
+        titre, artiste = None,None
+        debug("""Line %s cannot be parsed""" %ligne)
     return titre, artiste
 
 def update_db_file(database, extract):
@@ -98,6 +101,7 @@ def update_db_file(database, extract):
             original_playcount = is_in_db(connection, artiste, titre)
             if original_playcount == -1:
                 not_matched.append(artiste+' '+titre)
+                debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
             elif original_playcount < biblio[artiste][titre]:
                 update_playcount(connection, artiste, titre, biblio[artiste][titre])
                 matched.append(artiste+' '+titre)
@@ -161,7 +165,4 @@ if __name__ == "__main__":
     matched, not_matched = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
     
     info("%d entries have been updated\nNo match was found for %d entries" %(len(matched), len(not_matched)))
-    if options.debug == True:
-        for element in sorted(not_matched):
-            debug(element)
 

@@ -60,14 +60,17 @@ def update_rating(connection,artist,title,rating):
     curseur = connection.cursor()
     curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(rating),title, artist))
     curseur.close()
-    debug("""Rating of %s from %s has been updated to %d""" %(title, artist, int(rating)))
 
 def parse_line(ligne):
     """
     Read a last.fm extract line and return the artist and song part
     """
     regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
-    titre,artiste = regexp.findall(ligne)[0]
+    if regexp.match(ligne):
+        titre,artiste = regexp.findall(ligne)[0]
+    else:
+        titre, artiste = None,None
+        debug("""Line %s cannot be parsed""" %ligne)
     return titre, artiste
 
 def update_db_file(database, extract):
@@ -98,6 +101,7 @@ def update_db_file(database, extract):
             original_rating = is_in_db(connection, artiste, titre)
             if original_rating == "none":
                 not_matched.append(artiste+' '+titre)
+                debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
             elif original_rating < 1:
                 update_rating(connection, artiste, titre, 1)
                 matched.append(artiste+' '+titre)
@@ -136,7 +140,7 @@ if __name__ == "__main__":
         logging.basicConfig(level="INFO")
     if options.debug:
         logging.basicConfig(level="DEBUG")
-        
+    
     username= args[0]
     operating_system = platform.system()
     if operating_system == 'Linux':
@@ -160,8 +164,5 @@ if __name__ == "__main__":
     info("Reading extract file and updating database")    
     matched, not_matched = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
     
-    info("%d entries have been updated\nNo match was found for %d entries" %(len(matched), len(not_matched)))
-    if options.debug == True:
-        for element in sorted(not_matched):
-            debug(element)
+    info("%d entries have been updated, no match was found for %d entries" %(len(matched), len(not_matched)))
 
