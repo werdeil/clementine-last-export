@@ -82,6 +82,7 @@ def update_db_file(database, extract):
     biblio = {}    
     matched = []
     not_matched = []
+    already_ok = []
         
     #Loop which will read the extract and store each play to a dictionary
     for line in extract_file.readlines():
@@ -107,6 +108,8 @@ def update_db_file(database, extract):
             elif original_playcount < biblio[artiste][titre]:
                 update_playcount(connection, artiste, titre, biblio[artiste][titre])
                 matched.append(artiste+' '+titre)
+            else:
+                already_ok.append(artiste+' '+titre)
     try:
         connection.commit()
     except sqlite3.Error, err:
@@ -115,7 +118,7 @@ def update_db_file(database, extract):
         
     extract_file.close()
     connection.close()
-    return matched, not_matched
+    return matched, not_matched, already_ok
     
 #######################################################################
 #    Main
@@ -164,7 +167,7 @@ if __name__ == "__main__":
         shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
     
     info("Reading extract file and updating database")    
-    matched, not_matched = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
+    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
     
-    info("%d entries have been updated\nNo match was found for %d entries" %(len(matched), len(not_matched)))
+    info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
 
