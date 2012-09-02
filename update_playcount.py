@@ -70,7 +70,7 @@ def parse_line(ligne):
         titre,artiste = regexp.findall(ligne)[0]
     else:
         titre, artiste = None,None
-        debug("""Line %s cannot be parsed""" %ligne)
+        debug("""The following line cannot be parsed: %s""" %ligne[:-1])
     return titre, artiste
 
 def update_db_file(database, extract):
@@ -91,6 +91,8 @@ def update_db_file(database, extract):
                 biblio[artiste][titre] = biblio[artiste][titre] +1
             else:
                 biblio[artiste][titre] = 1
+        elif artiste == None or titre == None:
+            pass
         else:
             biblio[artiste] = {}
             biblio[artiste][titre] = 1
