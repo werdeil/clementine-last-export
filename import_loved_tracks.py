@@ -169,5 +169,5 @@ if __name__ == "__main__":
     info("Reading extract file and updating database")    
     matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
     
-    info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
+    info("%d entries have been updated, %d entries have already the correct note, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
 
