@@ -112,6 +112,8 @@ def get_tracklist(response):
     return tracklist
 
 def parse_track(trackelement):
+    print trackelement
+    1/0
     """Extract info from every track entry and output to list."""
     if trackelement.find('artist').getchildren():
         #artist info is nested in loved/banned tracks xml

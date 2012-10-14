@@ -155,7 +155,7 @@ if __name__ == "__main__":
     if operating_system == 'Windows':
         db_path = '%USERPROFILE%\\.config\\Clementine\\'''
     
-    if options.input_file == None:
+    if not options.input_file:
         info("No input file given, extracting directly from %s servers" %options.server)
         #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
         if os.path.exists(options.extract_file) and options.startpage == 1:
