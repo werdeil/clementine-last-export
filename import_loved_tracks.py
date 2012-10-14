@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser.add_option("-e", "--extract-file", dest="extract_file", default="loved_tracks.txt", help="extract file name, default is loved_tracks.txt")
     parser.add_option("-s", "--server", dest="server", default="last.fm", help="server to fetch track info from, default is last.fm")
     parser.add_option("-b", "--backup", dest="backup", default=False, action="store_true", help="backup db first")
-    parser.add_option("-i", "--input-file", dest="input_file", default=None, help="give already extracted file as input")
+    parser.add_option("-i", "--input-file", dest="input_file", default=False, action="store_true", help="use the already extracted file as input")
     parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
     

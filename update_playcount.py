@@ -58,7 +58,7 @@ def update_playcount(connection,artist,title,playcount):
     Update playcount of the given title
     """
     curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount),title, artist))
+    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount), title, artist))
     curseur.close()
 
 def parse_line(ligne):
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser.add_option("-e", "--extract-file", dest="extract_file", default="extract_last_fm.txt", help="extract file name, default is extract_last_fm.txt")
     parser.add_option("-s", "--server", dest="server", default="last.fm", help="server to fetch track info from, default is last.fm")
     parser.add_option("-b", "--backup", dest="backup", default=False, action="store_true", help="backup db first")
-    parser.add_option("-i", "--input-file", dest="input_file", default=None, help="give already extracted file as input")
+    parser.add_option("-i", "--input-file", dest="input_file", default=False, action="store_true", help="use the already extracted file as input")
     parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
     
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     if operating_system == 'Windows':
         db_path = '%USERPROFILE%\\.config\\Clementine\\'''
     
-    if options.input_file == None:
+    if not options.input_file:
         info("No input file given, extracting directly from %s servers" %options.server)
         #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
         if os.path.exists(options.extract_file) and options.startpage == 1:
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     if options.backup:
         info("Backing up database into clementine_backup.db")
         shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
-    
+
     info("Reading extract file and updating database")    
     matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
     
