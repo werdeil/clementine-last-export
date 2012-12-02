@@ -124,6 +124,32 @@ def update_db_file(database, extract):
 #    Main
 #######################################################################
 
+def main(username, input_file, server, extract_file, startpage, backup):
+    operating_system = platform.system()
+    if operating_system == 'Linux':
+        db_path = '~/.config/Clementine/'
+    if operating_system == 'Darwin':
+        db_path = '~/Library/Application Support/Clementine/'
+    if operating_system == 'Windows':
+        db_path = '%USERPROFILE%\\.config\\Clementine\\'''
+    
+    if not input_file:
+        info("No input file given, extracting directly from %s servers" %server)
+        #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
+        if os.path.exists(extract_file) and startpage == 1:
+            os.remove(extract_file)
+        lastexporter(server, username, startpage, extract_file, infotype='recenttracks')
+
+    if backup:
+        info("Backing up database into clementine_backup.db")
+        shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
+
+    info("Reading extract file and updating database")    
+    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file)
+    
+    info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
+
+
 if __name__ == "__main__":
     parser = OptionParser()
     parser.usage = """Usage: %prog <username> [options]
@@ -146,28 +172,5 @@ if __name__ == "__main__":
     if options.debug:
         logging.basicConfig(level="DEBUG")
         
-    username= args[0]
-    operating_system = platform.system()
-    if operating_system == 'Linux':
-        db_path = '~/.config/Clementine/'
-    if operating_system == 'Darwin':
-        db_path = '~/Library/Application Support/Clementine/'
-    if operating_system == 'Windows':
-        db_path = '%USERPROFILE%\\.config\\Clementine\\'''
+    main(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup)
     
-    if not options.input_file:
-        info("No input file given, extracting directly from %s servers" %options.server)
-        #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
-        if os.path.exists(options.extract_file) and options.startpage == 1:
-            os.remove(options.extract_file)
-        lastexporter(options.server, username, options.startpage, options.extract_file, infotype='recenttracks')
-
-    if options.backup:
-        info("Backing up database into clementine_backup.db")
-        shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
-
-    info("Reading extract file and updating database")    
-    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), options.extract_file)
-    
-    info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
-

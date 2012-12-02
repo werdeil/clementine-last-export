@@ -22,6 +22,7 @@ Gui to run the clementine last export tool
 from PyQt4 import QtGui
 
 import sys
+from update_playcount import main as update_playcount
 
 class ClemLastExportGui(QtGui.QMainWindow):
 
@@ -29,6 +30,9 @@ class ClemLastExportGui(QtGui.QMainWindow):
     
         super(ClemLastExportGui, self).__init__()
         self.initUI()
+        self.username = ""
+        self.server = "last.fm"
+        self.backup_database = True
         
         
     def initUI(self):
@@ -49,35 +53,54 @@ class ClemLastExportGui(QtGui.QMainWindow):
         fileMenu2.addAction(importAction) 
         
         #Main window
-        label1 = QtGui.QLabel('Import from the server', self)
-        label1.move(15, 10)  
-                    
-        import_button = QtGui.QPushButton('Import playcount', self)
-        import_button.setToolTip('Import playcount from Last.fm server')
-        import_button.resize(import_button.sizeHint())
-        import_button.move(20, 90)
-        import_button.clicked.connect(self.notYetImplemented)
+        ##Part import
+        lbl_part_import = QtGui.QLabel('Import from the server', self)
+        lbl_part_import.resize(200, 20)
+        lbl_part_import.move(15, 10)
+        
+        ###Server selection
+        lbl_combo_server  = QtGui.QLabel('Select the server', self)
+        lbl_combo_server.resize(200, 20)
+        lbl_combo_server.move(20, 40)        
         
         server_combo = QtGui.QComboBox(self)
-        server_combo.addItem("Last.fm")
-        server_combo.addItem("Libre.fm")
-        server_combo.move(20, 50)
-        server_combo.activated[str].connect(self.notYetImplemented)
+        server_combo.addItem("last.fm")
+        server_combo.addItem("libre.fm")
+        server_combo.move(140, 35)
+        server_combo.activated[str].connect(self.serverChanged)
         
-        label2 = QtGui.QLabel('Update Clementine Database', self)
-        label2.move(15, 120)
+        ###Server credentials
+        lbl_username  = QtGui.QLabel('Username', self)
+        lbl_username.move(20, 70)
+        field_username = QtGui.QLineEdit(self)
+        field_username.move(100, 70)
+        self.username = field_username.textChanged[str].connect(self.usernameChanged)
+        
+        ###Import button            
+#        import_button = QtGui.QPushButton('Import playcount', self)
+#        import_button.setToolTip('Import playcount from Last.fm server')
+#        import_button.resize(import_button.sizeHint())
+#        import_button.move(20, 90)
+#        import_button.clicked.connect(self.notYetImplemented)
+        
+        ##Part update
+        lbl_part_update = QtGui.QLabel('Update Clementine database', self)
+        lbl_part_update.resize(200, 20)
+        lbl_part_update.move(15, 120)
         
         backup_checkbox = QtGui.QCheckBox('Backup database', self)
-        backup_checkbox.move(20, 145)
-        backup_checkbox.stateChanged.connect(self.notYetImplemented) 
+        backup_checkbox.resize(200,20)
+        backup_checkbox.move(20, 150)
+        backup_checkbox.toggle()
+        backup_checkbox.stateChanged.connect(self.backupChanged) 
                     
-        update_button = QtGui.QPushButton('Update database', self)
-        update_button.setToolTip('Update Playcount of the Clementine DB')
+        update_button = QtGui.QPushButton('Run', self)
+        update_button.setToolTip('Run the script')
         update_button.resize(update_button.sizeHint())
         update_button.move(20, 175)  
-        update_button.clicked.connect(self.notYetImplemented)    
+        update_button.clicked.connect(self.run_script)    
         
-        self.resize(350, 250)
+        self.resize(450, 300)
         self.center()
         self.setWindowTitle('Clementine-Last-Export')
         
@@ -94,6 +117,27 @@ class ClemLastExportGui(QtGui.QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
         
+        
+    def run_script(self):
+        self.statusBar().showMessage('Running...')
+        update_playcount(self.username, "extract_last_fm.txt", self.server, "extract_last_fm.txt", 1, self.backup_database)
+        self.statusBar().showMessage('Import completed')
+        
+        
+    def usernameChanged(self,text):
+        self.username = text
+        
+        
+    def serverChanged(self,text):
+        self.server = text
+        
+        
+    def backupChanged(self, state):
+        if state == QtCore.Qt.Checked:
+            self.backup_database = True
+        else:
+            self.backup_database = False
+               
         
     def notYetImplemented(self):
       
