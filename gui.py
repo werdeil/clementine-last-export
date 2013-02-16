@@ -19,32 +19,34 @@
 Gui to run the clementine last export tool
 """
 
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 import sys
-from update_playcount import main as update_playcount
+import threading
+from update_playcount import update_playcount
+from import_loved_tracks import import_loved_tracks
+ 
 
 class ClemLastExportGui(QtGui.QMainWindow):
 
-    def __init__(self):
-    
+    def __init__(self):    
         super(ClemLastExportGui, self).__init__()
         self.initUI()
         self.username = ""
         self.server = "last.fm"
         self.backup_database = True
+        self.target = update_playcount
         
         
-    def initUI(self):
-    
+    def initUI(self):   
         #MenuBar
         exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)        
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(QtGui.qApp.quit)
         
-        importAction = QtGui.QAction('&Import from server', self)
-        exitAction.triggered.connect(self.notYetImplemented)
+        importAction = QtGui.QAction('&Run', self)
+        importAction.triggered.connect(self.run_script)
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -54,13 +56,13 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         #Main window
         ##Part import
-        lbl_part_import = QtGui.QLabel('Import from the server', self)
+        lbl_part_import = QtGui.QLabel('Information about the server', self)
         lbl_part_import.resize(200, 20)
         lbl_part_import.move(15, 10)
         
         ###Server selection
         lbl_combo_server  = QtGui.QLabel('Select the server', self)
-        lbl_combo_server.resize(200, 20)
+        lbl_combo_server.resize(120, 20)
         lbl_combo_server.move(20, 40)        
         
         server_combo = QtGui.QComboBox(self)
@@ -73,34 +75,41 @@ class ClemLastExportGui(QtGui.QMainWindow):
         lbl_username  = QtGui.QLabel('Username', self)
         lbl_username.move(20, 70)
         field_username = QtGui.QLineEdit(self)
-        field_username.move(100, 70)
+        field_username.move(140, 70)
         self.username = field_username.textChanged[str].connect(self.usernameChanged)
-        
-        ###Import button            
-#        import_button = QtGui.QPushButton('Import playcount', self)
-#        import_button.setToolTip('Import playcount from Last.fm server')
-#        import_button.resize(import_button.sizeHint())
-#        import_button.move(20, 90)
-#        import_button.clicked.connect(self.notYetImplemented)
-        
+                
         ##Part update
-        lbl_part_update = QtGui.QLabel('Update Clementine database', self)
-        lbl_part_update.resize(200, 20)
+        lbl_part_update = QtGui.QLabel('Options', self)
         lbl_part_update.move(15, 120)
         
         backup_checkbox = QtGui.QCheckBox('Backup database', self)
         backup_checkbox.resize(200,20)
         backup_checkbox.move(20, 150)
         backup_checkbox.toggle()
-        backup_checkbox.stateChanged.connect(self.backupChanged) 
+        backup_checkbox.stateChanged.connect(self.backupChanged)
+        
+        radio_button1 = QtGui.QRadioButton('Import playcount', self)
+        radio_button1.resize(160,20)
+        radio_button1.move(20, 180)
+        radio_button1.toggle()
+        radio_button2 = QtGui.QRadioButton('Import loved tracks', self)
+        radio_button2.resize(160,20)
+        radio_button2.move(20, 210)
+        
+        self.radio_group = QtGui.QButtonGroup()
+        self.radio_group.addButton(radio_button1)
+        self.radio_group.addButton(radio_button2)
+        self.radio_group.setExclusive(True)
+        self.radio_group.buttonClicked.connect(self.targetChanged)
+        
                     
         update_button = QtGui.QPushButton('Run', self)
         update_button.setToolTip('Run the script')
         update_button.resize(update_button.sizeHint())
-        update_button.move(20, 175)  
+        update_button.move(190, 190)  
         update_button.clicked.connect(self.run_script)    
         
-        self.resize(450, 300)
+        self.resize(300, 300)
         self.center()
         self.setWindowTitle('Clementine-Last-Export')
         
@@ -110,8 +119,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.show()
         
         
-    def center(self):
-            
+    def center(self):            
         qr = self.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -119,9 +127,21 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         
     def run_script(self):
-        self.statusBar().showMessage('Running...')
-        update_playcount(self.username, "extract_last_fm.txt", self.server, "extract_last_fm.txt", 1, self.backup_database)
-        self.statusBar().showMessage('Import completed')
+        if self.username == '':
+            self.statusBar().showMessage('Username needed')
+        else:
+            self.statusBar().showMessage('Running')            
+            print "Running the process %s with the infos: server = %s, username = %s, backup = %s\n" %(self.target, self.server, self.username, self.backup_database)
+            self.target(self.username, "extract_last_fm.txt", self.server, "extract_last_fm.txt",
+                          1, self.backup_database)
+            
+            ## Thread part commented as it is not working as expected yet
+            #thread1 = threading.Thread(group=None, target=self.target, name='clementine_last_export',
+            #              args=(self.username, "extract_last_fm.txt", self.server, "extract_last_fm.txt",
+            #              1, self.backup_database))
+            #thread1.start()            
+            #thread1.join()
+            self.statusBar().showMessage('Import completed')
         
         
     def usernameChanged(self,text):
@@ -137,7 +157,13 @@ class ClemLastExportGui(QtGui.QMainWindow):
             self.backup_database = True
         else:
             self.backup_database = False
-               
+    
+    
+    def targetChanged(self, button):
+        if button.text() == 'Import playcount':
+            self.target = update_playcount
+        else:
+            self.target = import_loved_tracks          
         
     def notYetImplemented(self):
       
