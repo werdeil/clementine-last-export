@@ -96,11 +96,11 @@ class ClemLastExportGui(QtGui.QMainWindow):
         radio_button2.resize(160,20)
         radio_button2.move(20, 210)
         
-        self.radio_group = QtGui.QButtonGroup()
-        self.radio_group.addButton(radio_button1)
-        self.radio_group.addButton(radio_button2)
-        self.radio_group.setExclusive(True)
-        self.radio_group.buttonClicked.connect(self.targetChanged)
+        radio_group = QtGui.QButtonGroup(self)
+        radio_group.addButton(radio_button1)
+        radio_group.addButton(radio_button2)
+        radio_group.setExclusive(True)
+        radio_group.buttonClicked.connect(self.targetChanged)
         
                     
         update_button = QtGui.QPushButton('Run', self)
