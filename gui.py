@@ -23,6 +23,9 @@ from PyQt4 import QtGui, QtCore
 
 import sys
 import threading
+from optparse import OptionParser
+import logging
+from logging import info, warning, error, debug
 from update_playcount import update_playcount
 from import_loved_tracks import import_loved_tracks
  
@@ -175,4 +178,19 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
+
+    parser = OptionParser()
+    parser.usage = """Usage: %prog [options]
+    
+    Run the GUI which will use the scripts of the package
+    """
+    parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
+    parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
+    
+    options, args = parser.parse_args()
+    if options.verbose:
+        logging.basicConfig(level="INFO")
+    if options.debug:
+        logging.basicConfig(level="DEBUG")
+        
     main()
