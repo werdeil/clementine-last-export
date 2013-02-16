@@ -53,7 +53,7 @@ def is_in_db(connection,artist,title):
     curseur.close()
     return playcount
 
-def update_playcount(connection,artist,title,playcount):
+def update_title_playcount(connection,artist,title,playcount):
     """
     Update playcount of the given title
     """
@@ -106,7 +106,7 @@ def update_db_file(database, extract):
                 not_matched.append(artiste+' '+titre)
                 debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
             elif original_playcount < biblio[artiste][titre]:
-                update_playcount(connection, artiste, titre, biblio[artiste][titre])
+                update_title_playcount(connection, artiste, titre, biblio[artiste][titre])
                 matched.append(artiste+' '+titre)
             else:
                 already_ok.append(artiste+' '+titre)
@@ -124,7 +124,7 @@ def update_db_file(database, extract):
 #    Main
 #######################################################################
 
-def main(username, input_file, server, extract_file, startpage, backup):
+def update_playcount(username, input_file, server, extract_file, startpage, backup):
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
@@ -172,5 +172,5 @@ if __name__ == "__main__":
     if options.debug:
         logging.basicConfig(level="DEBUG")
         
-    main(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup)
+    update_playcount(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup)
     
