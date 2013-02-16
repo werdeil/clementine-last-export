@@ -132,7 +132,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         else:
             self.statusBar().showMessage('Running')            
             print "Running the process %s with the infos: server = %s, username = %s, backup = %s\n" %(self.target, self.server, self.username, self.backup_database)
-            self.target(self.username, "extract_last_fm.txt", self.server, "extract_last_fm.txt",
+            self.target(self.username, False, self.server, "extract_last_fm.txt",
                           1, self.backup_database)
             
             ## Thread part commented as it is not working as expected yet
@@ -146,7 +146,6 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
     def usernameChanged(self,text):
         self.username = text
-        
         
     def serverChanged(self,text):
         self.server = text
@@ -163,10 +162,9 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if button.text() == 'Import playcount':
             self.target = update_playcount
         else:
-            self.target = import_loved_tracks          
+            self.target = import_loved_tracks
         
-    def notYetImplemented(self):
-      
+    def notYetImplemented(self):      
         sender = self.sender()
         self.statusBar().showMessage(sender.text() + ' not yet implemented')
         
