@@ -135,7 +135,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         else:
             self.statusBar().showMessage('Running')            
             print "Running the process %s with the infos: server = %s, username = %s, backup = %s\n" %(self.target, self.server, self.username, self.backup_database)
-            self.target(self.username, False, self.server, "extract_last_fm.txt",
+            self.target(self.username, False, self.server, "%s.txt" %self.target.__name__,
                           1, self.backup_database)
             
             ## Thread part commented as it is not working as expected yet
