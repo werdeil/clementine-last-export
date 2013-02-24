@@ -110,7 +110,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         update_button.setToolTip('Run the script')
         update_button.resize(update_button.sizeHint())
         update_button.move(190, 190)  
-        update_button.clicked.connect(self.run_script)    
+        update_button.clicked.connect(self.run_script)  
         
         self.resize(300, 300)
         self.center()
@@ -135,16 +135,14 @@ class ClemLastExportGui(QtGui.QMainWindow):
         else:
             self.statusBar().showMessage('Running')            
             print "Running the process %s with the infos: server = %s, username = %s, backup = %s\n" %(self.target, self.server, self.username, self.backup_database)
-            self.target(self.username, False, self.server, "%s.txt" %self.target.__name__,
-                          1, self.backup_database)
+            #self.target(self.username, False, self.server, "%s.txt" %self.target.__name__,
+            #              1, self.backup_database)
             
             ## Thread part commented as it is not working as expected yet
-            #thread1 = threading.Thread(group=None, target=self.target, name='clementine_last_export',
-            #              args=(self.username, "extract_last_fm.txt", self.server, "extract_last_fm.txt",
-            #              1, self.backup_database))
-            #thread1.start()            
-            #thread1.join()
-            self.statusBar().showMessage('Import completed')
+            thread1 = GenericThread(self.target, self.username, False, self.server,
+                "%s.txt" %self.target.__name__, 1, self.backup_database)
+            self.connect(thread1, QtCore.SIGNAL("import_completed(PyQt_PyObject)"), self.import_completed)
+            thread1.start()
         
         
     def usernameChanged(self,text):
@@ -167,9 +165,26 @@ class ClemLastExportGui(QtGui.QMainWindow):
         else:
             self.target = import_loved_tracks
         
-    def notYetImplemented(self):      
-        sender = self.sender()
-        self.statusBar().showMessage(sender.text() + ' not yet implemented')
+    def import_completed(self, msg):
+        """Run when the thread is finished (normaly or not)"""
+        QtGui.QMessageBox.information(self, u"Operation finished", msg)        
+        self.statusBar().showMessage('Import completed')
+        
+
+class GenericThread(QtCore.QThread):
+    def __init__(self, function, *args, **kwargs):
+        QtCore.QThread.__init__(self)
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+
+    def __del__(self):
+        self.wait()
+        
+    def run(self):
+        self.function(*self.args,**self.kwargs)
+        self.emit(QtCore.SIGNAL("import_completed(PyQt_PyObject)"), "Finished")
+        return
         
 def main():
 
