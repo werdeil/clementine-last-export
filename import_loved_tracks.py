@@ -27,7 +27,7 @@ import os, platform
 
 from optparse import OptionParser
 import logging
-from logging import info,warning,error,debug
+from logging import info, warning, error, debug
 
 from lastexport import main as lastexporter
 
@@ -172,4 +172,4 @@ if __name__ == "__main__":
     if options.debug:
         logging.basicConfig(level="DEBUG")
         
-    import_loved_tracks(args[0],options.input_file, options.server, options.extract_file, options.startpage, options.backup)
+    import_loved_tracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup)
