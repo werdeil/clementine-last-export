@@ -124,7 +124,7 @@ def update_db_file(database, extract, force_update=False):
 #    Main
 #######################################################################
 
-def update_playcount(username, input_file, server, extract_file, startpage, backup, Force_update = False):
+def update_playcount(username, input_file, server, extract_file, startpage, backup, force_update = False):
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
