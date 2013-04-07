@@ -135,9 +135,6 @@ def update_playcount(username, input_file, server, extract_file, startpage, back
     
     if not input_file:
         info("No input file given, extracting directly from %s servers" %server)
-        #Remove existing file except if the startpage is different from 1 because last_export script will no overwrite it, useful in case of a bad internet connection
-        if os.path.exists(extract_file) and startpage == 1:
-            os.remove(extract_file)
         lastexporter(server, username, startpage, extract_file, infotype='recenttracks')
 
     if backup:
