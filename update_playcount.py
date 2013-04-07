@@ -73,7 +73,7 @@ def parse_line(ligne):
         debug("""The following line cannot be parsed: %s""" %ligne[:-1])
     return titre, artiste
 
-def update_db_file(database, extract):
+def update_db_file(database, extract, force_update=False):
     """
     Update a database according to an extract file
     """
@@ -105,7 +105,7 @@ def update_db_file(database, extract):
             if original_playcount == -1:
                 not_matched.append(artiste+' '+titre)
                 debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
-            elif original_playcount < biblio[artiste][titre]:
+            elif original_playcount < biblio[artiste][titre] or force_update:
                 update_title_playcount(connection, artiste, titre, biblio[artiste][titre])
                 matched.append(artiste+' '+titre)
             else:
@@ -124,7 +124,7 @@ def update_db_file(database, extract):
 #    Main
 #######################################################################
 
-def update_playcount(username, input_file, server, extract_file, startpage, backup):
+def update_playcount(username, input_file, server, extract_file, startpage, backup, Force_update = False):
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
@@ -145,7 +145,7 @@ def update_playcount(username, input_file, server, extract_file, startpage, back
         shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
 
     info("Reading extract file and updating database")    
-    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file)
+    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update)
     
     info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
 

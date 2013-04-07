@@ -39,7 +39,7 @@ def is_in_db(connection,artist,title):
     """
     Return note of the track if it is in the database, -1 if it is not the case
     """
-    rating = "none"
+    rating = None
     curseur = connection.cursor()
     curseur.execute("""SELECT rating FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
     result = curseur.fetchall()
@@ -73,7 +73,7 @@ def parse_line(ligne):
         debug("""The following line cannot be parsed: %s""" %ligne[:-1])
     return titre, artiste
 
-def update_db_file(database, extract):
+def update_db_file(database, extract, force_update=True):
     """
     Update a database according to an extract file
     """
@@ -102,9 +102,11 @@ def update_db_file(database, extract):
     for artiste in biblio.keys():
         for titre in biblio[artiste].keys():
             original_rating = is_in_db(connection, artiste, titre)
-            if original_rating == "none":
+            if original_rating == None:
                 not_matched.append(artiste+' '+titre)
                 debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
+            elif original_rating == 4.5/5 and not force_update:
+                already_ok.append(artiste+' '+titre)
             elif original_rating < 1:
                 update_rating(connection, artiste, titre, 1)
                 matched.append(artiste+' '+titre)
@@ -124,7 +126,7 @@ def update_db_file(database, extract):
 #    Main
 #######################################################################
 
-def import_loved_tracks(username, input_file, server, extract_file, startpage, backup):
+def import_loved_tracks(username, input_file, server, extract_file, startpage, backup, force_update=True):
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
@@ -145,7 +147,7 @@ def import_loved_tracks(username, input_file, server, extract_file, startpage, b
         shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
     
     info("Reading extract file and updating database")    
-    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file)
+    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update)
     
     info("%d entries have been updated, %d entries have already the correct note, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
 
