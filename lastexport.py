@@ -20,7 +20,7 @@ Script for exporting tracks through audioscrobbler API.
 Usage: lastexport.py -u USER [-o OUTFILE] [-p STARTPAGE] [-s SERVER]
 """
 
-import urllib2, urllib, sys, time, re
+import urllib2, urllib, sys, time, re, os
 import xml.etree.ElementTree as ET
 from optparse import OptionParser
 
@@ -133,7 +133,7 @@ def parse_track(trackelement):
     trackmbid = trackelement.find('mbid').text
     date = trackelement.find('date').get('uts')
 
-    output = [date, trackname, artistname, albumname, trackmbid, artistmbid, albummbid]
+    output = [date, trackname, artistname, albumname]
 
     for i, v in enumerate(output):
         if v is None:
@@ -146,17 +146,17 @@ def write_tracks(tracks, outfileobj):
     for fields in tracks:
         outfileobj.write(("\t".join(fields) + "\n").encode('utf-8'))
 
-def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='recenttracks'):
+def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='recenttracks', firsttrack = None):
     page = startpage
     response = connect_server(server, username, page, sleep_func, tracktype)
     totalpages = get_pageinfo(response, tracktype)
+    import_finished = False
 
     if startpage > totalpages:
         raise ValueError("First page (%s) is higher than total pages (%s)." % (startpage, totalpages))
 
     while page <= totalpages:
         #Skip connect if on first page, already have that one stored.
-
         if page > startpage:
             response =  connect_server(server, username, page, sleep_func, tracktype)
 
@@ -165,21 +165,43 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
         tracks = []
         for trackelement in tracklist:
             # do not export the currently playing track.
-            if not trackelement.attrib.has_key("nowplaying") or not trackelement.attrib["nowplaying"]:
+            track = parse_track(trackelement)
+            if track == firsttrack:
+                import_finished = True
+                break
+            elif not trackelement.attrib.has_key("nowplaying") or not trackelement.attrib["nowplaying"]:
                 tracks.append(parse_track(trackelement))
 
         yield page, totalpages, tracks
 
         page += 1
         sleep_func(.5)
+        
+        if import_finished:
+            break
 
 def main(server, username, startpage, outfile, infotype='recenttracks'):
+
+    track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*?)")
+    #read the already existing file (if it exists)
+    if os.path.exists(outfile):
+        print "%s is already present, it will be used as reference to speed up the import" %outfile
+        old_file = open(outfile, "r")
+        already_imported_lines = old_file.readlines()
+        old_file.close()
+        firstline = already_imported_lines[0]
+        date , title, artist, album = track_regexp.findall(firstline)[0]
+        firsttrack = [date , title, artist, album]
+    else:
+        firsttrack = None
+        already_imported_lines = []
+        
     trackdict = dict()
     page = startpage  # for case of exception
     totalpages = -1  # ditto
     n = 0
     try:
-        for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=infotype):
+        for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=infotype, firsttrack=firsttrack):
             print "Got page %s of %s.." % (page, totalpages)
             for track in tracks:
                 if infotype == 'recenttracks':
@@ -193,10 +215,15 @@ def main(server, username, startpage, outfile, infotype='recenttracks'):
     except Exception:
         raise
     finally:
-        with open(outfile, 'a') as outfileobj:
+        with open(outfile, 'w') as outfileobj:
             tracks = sorted(trackdict.values(), reverse=True)
             write_tracks(tracks, outfileobj)
             print "Wrote page %s-%s of %s to file %s" % (startpage, page, totalpages, outfile)
+            
+            for line in already_imported_lines:
+                outfileobj.write(line)
+            print "Completed with already imported informations"
+            outfileobj.close()
 
 if __name__ == "__main__":
     parser = OptionParser()
