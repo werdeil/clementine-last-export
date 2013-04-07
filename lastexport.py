@@ -165,13 +165,14 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
         tracks = []
         for trackelement in tracklist:
             # do not export the currently playing track.
-            track = parse_track(trackelement)
-            if track == firsttrack:
-                import_finished = True
-                break
-            elif not trackelement.attrib.has_key("nowplaying") or not trackelement.attrib["nowplaying"]:
-                tracks.append(parse_track(trackelement))
-
+            if not trackelement.attrib.has_key("nowplaying") or not trackelement.attrib["nowplaying"]:
+                track = parse_track(trackelement)
+                if track == firsttrack:
+                    import_finished = True
+                    break
+                else:
+                    tracks.append(track)
+                
         yield page, totalpages, tracks
 
         page += 1
@@ -182,7 +183,7 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
 
 def main(server, username, startpage, outfile, infotype='recenttracks'):
 
-    track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*?)")
+    track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*)")
     #read the already existing file (if it exists)
     if os.path.exists(outfile):
         print "%s is already present, it will be used as reference to speed up the import" %outfile
@@ -190,7 +191,7 @@ def main(server, username, startpage, outfile, infotype='recenttracks'):
         already_imported_lines = old_file.readlines()
         old_file.close()
         firstline = already_imported_lines[0]
-        date , title, artist, album = track_regexp.findall(firstline)[0]
+        date, title, artist, album = track_regexp.findall(firstline)[0]
         firsttrack = [date , title, artist, album]
     else:
         firsttrack = None
