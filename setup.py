@@ -9,5 +9,6 @@ setup(name='clementine-last-export',
       author='Vincent Verdeil',
       author_email='vincent.verdeil@gmail.com',
       url='http://code.google.com/p/clementine-last-export/',
-      py_modules=['gui','import_loved_tracks','lastexport','update_playcount'],
+      packages=['clementine-last-export'],
+      package_data={'clementine-last-export': ['*.png']},
       )
