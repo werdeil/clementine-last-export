@@ -121,8 +121,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         self.resize(300, 300)
         self.center()
-        self.setWindowTitle('Clementine-Last-Export')        
-        self.setWindowIcon(QtGui.QIcon('clementine-last-export.png'))
+        self.setWindowTitle('Clementine Last Export')        
+        self.setWindowIcon(QtGui.QIcon('clementine_last_export.png'))
         
         #Status bar 
         self.statusBar().showMessage('Ready')
