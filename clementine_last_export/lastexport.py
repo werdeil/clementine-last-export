@@ -223,7 +223,7 @@ def main(server, username, startpage, outfile, infotype='recenttracks', use_cach
             
             for line in already_imported_lines:
                 outfileobj.write(line)
-            if already_imported_lines != []
+            if already_imported_lines != []:
                 print "Completed with already imported informations"
             outfileobj.close()
 
