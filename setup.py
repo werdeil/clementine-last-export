@@ -9,6 +9,7 @@ setup(name='clementine_last_export',
       author='Vincent Verdeil',
       author_email='vincent.verdeil@gmail.com',
       url='http://code.google.com/p/clementine-last-export/',
+      scripts=['bin/clementine_last_export'],
       packages=['clementine_last_export'],
       package_data={'clementine_last_export': ['*.png']},
       )
