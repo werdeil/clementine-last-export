@@ -124,7 +124,7 @@ def update_db_file(database, extract, force_update=False):
 #    Main
 #######################################################################
 
-def update_playcount(username, input_file, server, extract_file, startpage, backup, force_update = False):
+def update_playcount(username, input_file, server, extract_file, startpage, backup, force_update = False, use_cache = False):
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
@@ -135,7 +135,7 @@ def update_playcount(username, input_file, server, extract_file, startpage, back
     
     if not input_file:
         info("No input file given, extracting directly from %s servers" %server)
-        lastexporter(server, username, startpage, extract_file, infotype='recenttracks')
+        lastexporter(server, username, startpage, extract_file, infotype='recenttracks', use_cache=use_cache)
 
     if backup:
         info("Backing up database into clementine_backup.db")
@@ -169,5 +169,5 @@ if __name__ == "__main__":
     if options.debug:
         logging.basicConfig(level="DEBUG")
         
-    update_playcount(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup)
+    update_playcount(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup, options.use_cache)
     

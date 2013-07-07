@@ -126,7 +126,7 @@ def update_db_file(database, extract, force_update=True):
 #    Main
 #######################################################################
 
-def import_loved_tracks(username, input_file, server, extract_file, startpage, backup, force_update=True):
+def import_loved_tracks(username, input_file, server, extract_file, startpage, backup, force_update=True, use_cache=False):
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
@@ -137,7 +137,7 @@ def import_loved_tracks(username, input_file, server, extract_file, startpage, b
     
     if not input_file:
         info("No input file given, extracting directly from %s servers" %server)
-        lastexporter(server, username, startpage, extract_file, infotype='lovedtracks')
+        lastexporter(server, username, startpage, extract_file, infotype='lovedtracks', use_cache=use_cache)
 
     if backup:
         info("Backing up database into clementine_backup.db")
@@ -171,4 +171,4 @@ if __name__ == "__main__":
     if options.debug:
         logging.basicConfig(level="DEBUG")
         
-    import_loved_tracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup)
+    import_loved_tracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup, options.use_cache)
