@@ -39,6 +39,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.server = "last.fm"
         self.backup_database = True
         self.force_update = False
+        self.use_cache = True
         self.target = update_playcount
         
         
@@ -81,45 +82,54 @@ class ClemLastExportGui(QtGui.QMainWindow):
         field_username = QtGui.QLineEdit(self)
         field_username.move(140, 70)
         self.username = field_username.textChanged[str].connect(self.usernameChanged)
-                
-        ##Part update
-        lbl_part_update = QtGui.QLabel('Options', self)
-        lbl_part_update.move(15, 120)
         
-        backup_checkbox = QtGui.QCheckBox('Backup database', self)
-        backup_checkbox.resize(200,20)
-        backup_checkbox.move(20, 150)
-        backup_checkbox.toggle()
-        backup_checkbox.stateChanged.connect(self.backupChanged)
-        
-        force_update_checkbox = QtGui.QCheckBox('Force update', self)
-        force_update_checkbox.resize(200,20)
-        force_update_checkbox.move(20, 180)
-        force_update_checkbox.stateChanged.connect(self.forceUpdateChanged)
-        force_update_checkbox.setToolTip('Check this box if you want to force the update\n - of loved tracks already rated at 4.5 stars\n - of playcounts higher locally than the one on the music server')
-        
+        ###Part target
         radio_button1 = QtGui.QRadioButton('Import playcount', self)
         radio_button1.resize(160,20)
-        radio_button1.move(20, 210)
+        radio_button1.move(20, 120)
         radio_button1.toggle()
         radio_button2 = QtGui.QRadioButton('Import loved tracks', self)
         radio_button2.resize(160,20)
-        radio_button2.move(20, 240)
+        radio_button2.move(20, 150)
         
         radio_group = QtGui.QButtonGroup(self)
         radio_group.addButton(radio_button1)
         radio_group.addButton(radio_button2)
         radio_group.setExclusive(True)
         radio_group.buttonClicked.connect(self.targetChanged)
+                
+        ##Part options
+        lbl_part_update = QtGui.QLabel('Options', self)
+        lbl_part_update.move(15, 180)
         
-                    
+        backup_checkbox = QtGui.QCheckBox('Backup database', self)
+        backup_checkbox.resize(200,20)
+        backup_checkbox.move(20, 210)
+        backup_checkbox.toggle()
+        backup_checkbox.stateChanged.connect(self.backupChanged)
+        
+        force_update_checkbox = QtGui.QCheckBox('Force update', self)
+        force_update_checkbox.resize(200,20)
+        force_update_checkbox.move(20, 240)
+        force_update_checkbox.stateChanged.connect(self.forceUpdateChanged)
+        force_update_checkbox.setToolTip('Check this box if you want to force the update\n - of loved tracks already rated at 4.5 stars\n - of playcounts higher locally than the one on the music server')
+        
+        use_cache_checkbox = QtGui.QCheckBox('Use cache file (if available)', self)
+        use_cache_checkbox.resize(200,20)
+        use_cache_checkbox.move(20, 270)        
+        use_cache_checkbox.toggle()
+        use_cache_checkbox.stateChanged.connect(self.useCacheChanged)
+        use_cache_checkbox.setToolTip('Check this box if you want to use the cache file from a previous import')        
+        
+        ###Run button
         update_button = QtGui.QPushButton('Run', self)
         update_button.setToolTip('Run the script')
         update_button.resize(update_button.sizeHint())
-        update_button.move(190, 220)  
+        update_button.move(190, 130)  
         update_button.clicked.connect(self.run_script)  
         
-        self.resize(300, 300)
+        ###global window
+        self.resize(300, 350)
         self.center()
         self.setWindowTitle('Clementine Last Export')        
         self.setWindowIcon(QtGui.QIcon('clementine_last_export.png'))
@@ -142,13 +152,13 @@ class ClemLastExportGui(QtGui.QMainWindow):
             self.statusBar().showMessage('Username needed')
         else:
             self.statusBar().showMessage('Running')            
-            print "Running the process %s with the infos: server = %s, username = %s, backup = %s, force update = %s\n" %(self.target, self.server, self.username, self.backup_database, self.force_update)
+            print "Running the process %s with the infos: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n" %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache)
             #self.target(self.username, False, self.server, "%s.txt" %self.target.__name__,
-            #              1, self.backup_database)
+            #              1, self.backup_database, self.use_cache)
             
             ## Thread part commented as it is not working as expected yet
             thread1 = GenericThread(self.target, self.username, False, self.server,
-                "%s.txt" %self.target.__name__, 1, self.backup_database, self.force_update)
+                "cache_%s.txt" %self.target.__name__, 1, self.backup_database, self.force_update, self.use_cache)
             self.connect(thread1, QtCore.SIGNAL("import_completed(PyQt_PyObject)"), self.import_completed)
             thread1.start()
         
@@ -172,6 +182,13 @@ class ClemLastExportGui(QtGui.QMainWindow):
             self.force_update = True
         else:
             self.force_update = False
+        
+        
+    def useCacheChanged(self, state):
+        if state == QtCore.Qt.Checked:
+            self.use_cache = True
+        else:
+            self.use_cache = False
     
     
     def targetChanged(self, button):
