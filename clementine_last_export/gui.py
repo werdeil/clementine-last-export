@@ -52,12 +52,20 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         importAction = QtGui.QAction('&Run', self)
         importAction.triggered.connect(self.run_script)
+        
+        aboutAction = QtGui.QAction('&About Clementine Last Export', self)
+        aboutAction.triggered.connect(self.open_about)
+        aboutQtAction = QtGui.QAction('&About Qt', self)
+        aboutQtAction.triggered.connect(self.open_aboutQt)
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAction)
         fileMenu2 = menubar.addMenu('&Import')
-        fileMenu2.addAction(importAction) 
+        fileMenu2.addAction(importAction)         
+        fileMenu3 = menubar.addMenu('&About')
+        fileMenu3.addAction(aboutAction)
+        fileMenu3.addAction(aboutQtAction) 
         
         #Main window
         ##Part import
@@ -201,6 +209,16 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """Run when the thread is finished (normaly or not)"""
         QtGui.QMessageBox.information(self, u"Operation finished", msg)        
         self.statusBar().showMessage('Import completed')
+        
+    def open_about(self):
+        about_text="""<b>Clementine Last Export</b>
+        <br/><br/>
+        Developped by Vincent VERDEIL<br/><br/>
+        <a href="http://code.google.com/p/clementine-last-export/">http://code.google.com/p/clementine-last-export/</a>"""
+        QtGui.QMessageBox.about(self,"About Clementine Last Export", about_text)
+        
+    def open_aboutQt(self):
+        QtGui.QMessageBox.aboutQt(self)
         
 
 class GenericThread(QtCore.QThread):
