@@ -181,11 +181,11 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
         if import_finished:
             break
 
-def main(server, username, startpage, outfile, infotype='recenttracks'):
+def main(server, username, startpage, outfile, infotype='recenttracks', use_cache =False):
 
     track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*)")
-    #read the already existing file (if it exists)
-    if os.path.exists(outfile):
+    #read the already existing file (if it exists) and use_cache option
+    if os.path.exists(outfile) and use_cache:
         print "%s is already present, it will be used as reference to speed up the import" %outfile
         old_file = open(outfile, "r")
         already_imported_lines = old_file.readlines()
