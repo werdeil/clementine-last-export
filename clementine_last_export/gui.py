@@ -28,6 +28,8 @@ import logging
 from logging import info, warning, error, debug
 from update_playcount import update_playcount
 from import_loved_tracks import import_loved_tracks
+
+import icons_rc
  
 
 class ClemLastExportGui(QtGui.QMainWindow):
@@ -45,7 +47,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
     def initUI(self):   
         #MenuBar
-        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)        
+        exitAction = QtGui.QAction('&Exit', self)        
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(QtGui.qApp.quit)
@@ -139,8 +141,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         ###global window
         self.resize(300, 350)
         self.center()
-        self.setWindowTitle('Clementine Last Export')        
-        self.setWindowIcon(QtGui.QIcon('clementine_last_export.png'))
+        self.setWindowTitle('Clementine Last Export')      
+        self.setWindowIcon(QtGui.QIcon(':/myresources/clementine_last_export.png'))
         
         #Status bar 
         self.statusBar().showMessage('Ready')

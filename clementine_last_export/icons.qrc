@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/myresources">
+    <file alias="clementine_last_export.png">images/clementine_last_export.png</file>
+  </qresource>
+</RCC>

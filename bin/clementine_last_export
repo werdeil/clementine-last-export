@@ -21,6 +21,8 @@ Gui to run the clementine last export tool
 
 from optparse import OptionParser
 import logging
+
+import clementine_last_export.gui
 from clementine_last_export.gui import main
 
 if __name__ == "__main__":
