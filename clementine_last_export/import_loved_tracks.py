@@ -30,36 +30,11 @@ import logging
 from logging import info, warning, error, debug
 
 from lastexport import main as lastexporter
+from db_management import backup_db, update_rating, is_in_db
 
 #########################################################################
 #    Functions
 #########################################################################
-
-def is_in_db(connection,artist,title):
-    """
-    Return note of the track if it is in the database, -1 if it is not the case
-    """
-    rating = None
-    curseur = connection.cursor()
-    curseur.execute("""SELECT rating FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
-    result = curseur.fetchall()
-    if len(result)>0:
-        rating = result[0][0]
-    else:
-        curseur.execute("""SELECT rating FROM songs WHERE title LIKE ? AND artist LIKE ? """ ,(title, artist))
-        result = curseur.fetchall()
-        if len(result)>0:
-            rating = result[0][0]
-    curseur.close()
-    return rating
-
-def update_rating(connection,artist,title,rating):
-    """
-    Update rating of the given title
-    """
-    curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(rating),title, artist))
-    curseur.close()
 
 def parse_line(ligne):
     """
@@ -101,7 +76,7 @@ def update_db_file(database, extract, force_update=True):
     #Loop which will try to update the database with each entry of the dictionnary           
     for artiste in biblio.keys():
         for titre in biblio[artiste].keys():
-            original_rating = is_in_db(connection, artiste, titre)
+            original_rating, playcount = is_in_db(connection, artiste, titre)
             if original_rating == None:
                 not_matched.append(artiste+' '+titre)
                 debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
@@ -140,8 +115,7 @@ def import_loved_tracks(username, input_file, server, extract_file, startpage, b
         lastexporter(server, username, startpage, extract_file, infotype='lovedtracks', use_cache=use_cache)
 
     if backup:
-        info("Backing up database into clementine_backup.db")
-        shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
+        backup_db(db_path)
     
     info("Reading extract file and updating database")    
     matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update)

@@ -30,36 +30,11 @@ import logging
 from logging import info,warning,error,debug
 
 from lastexport import main as lastexporter
+from db_management import backup_db, update_playcount, is_in_db
 
 #########################################################################
 #    Functions
 #########################################################################
-
-def is_in_db(connection,artist,title):
-    """
-    Return playcount if the track is in the database, -1 if it is not the case
-    """
-    playcount = -1
-    curseur = connection.cursor()
-    curseur.execute("""SELECT playcount FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
-    result = curseur.fetchall()
-    if len(result)>0:
-        playcount = result[0][0]
-    else:
-        curseur.execute("""SELECT playcount FROM songs WHERE title LIKE ? AND artist LIKE ? """ ,(title, artist))
-        result = curseur.fetchall()
-        if len(result)>0:
-            playcount = result[0][0]
-    curseur.close()
-    return playcount
-
-def update_title_playcount(connection,artist,title,playcount):
-    """
-    Update playcount of the given title
-    """
-    curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount), title, artist))
-    curseur.close()
 
 def parse_line(ligne):
     """
@@ -101,12 +76,12 @@ def update_db_file(database, extract, force_update=False):
     #Loop which will try to update the database with each entry of the dictionnary           
     for artiste in biblio.keys():
         for titre in biblio[artiste].keys():
-            original_playcount = is_in_db(connection, artiste, titre)
+            rating, original_playcount = is_in_db(connection, artiste, titre)
             if original_playcount == -1:
                 not_matched.append(artiste+' '+titre)
                 debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
             elif original_playcount < biblio[artiste][titre] or force_update:
-                update_title_playcount(connection, artiste, titre, biblio[artiste][titre])
+                update_playcount(connection, artiste, titre, biblio[artiste][titre])
                 matched.append(artiste+' '+titre)
             else:
                 already_ok.append(artiste+' '+titre)
@@ -138,8 +113,7 @@ def update_playcount(username, input_file, server, extract_file, startpage, back
         lastexporter(server, username, startpage, extract_file, infotype='recenttracks', use_cache=use_cache)
 
     if backup:
-        info("Backing up database into clementine_backup.db")
-        shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
+        backup_db(db_path)
 
     info("Reading extract file and updating database")    
     matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update)
