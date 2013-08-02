@@ -20,17 +20,11 @@ Script gathering all the methods for the management of the database
 """
 
 import sqlite3
-import re
-import codecs
 
 import shutil
-import os, platform
+import os
 
-from optparse import OptionParser
-import logging
 from logging import info, warning, error, debug
-
-from lastexport import main as lastexporter
 
 #########################################################################
 #    Functions

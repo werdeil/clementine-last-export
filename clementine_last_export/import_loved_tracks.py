@@ -22,7 +22,6 @@ import sqlite3
 import re
 import codecs
 
-import shutil
 import os, platform
 
 from optparse import OptionParser
