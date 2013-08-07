@@ -136,7 +136,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         update_button.setToolTip('Run the script')
         update_button.resize(update_button.sizeHint())
         update_button.move(190, 130)  
-        update_button.clicked.connect(self.run_script)  
+        update_button.clicked.connect(self.run_script)
+        update_button.setShortcut(update_button.tr("Return"))
         
         ###global window
         self.resize(300, 350)
