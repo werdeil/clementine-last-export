@@ -28,24 +28,12 @@ from optparse import OptionParser
 import logging
 from logging import info,warning,error,debug
 
-from lastexport import main as lastexporter
+from server_management import lastexporter, parse_line
 from db_management import backup_db, update_playcount, is_in_db
 
 #########################################################################
 #    Functions
 #########################################################################
-
-def parse_line(ligne):
-    """
-    Read a last.fm extract line and return the artist and song part
-    """
-    regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
-    if regexp.match(ligne):
-        titre,artiste = regexp.findall(ligne)[0]
-    else:
-        titre, artiste = None,None
-        debug("""The following line cannot be parsed: %s""" %ligne[:-1])
-    return titre, artiste
 
 def update_db_file(database, extract, force_update=False):
     """
@@ -99,6 +87,9 @@ def update_db_file(database, extract, force_update=False):
 #######################################################################
 
 def update_playcount(username, input_file, server, extract_file, startpage, backup, force_update = False, use_cache = False):
+    """
+    Main method
+    """
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'

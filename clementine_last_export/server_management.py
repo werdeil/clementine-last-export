@@ -24,34 +24,6 @@ import urllib2, urllib, sys, time, re, os
 import xml.etree.ElementTree as ET
 from optparse import OptionParser
 
-__version__ = '0.0.4'
-
-def get_options(parser):
-    """ Define command line options."""
-    parser.add_option("-u", "--user", dest="username", default=None,
-                      help="User name.")
-    parser.add_option("-o", "--outfile", dest="outfile", default="exported_tracks.txt",
-                      help="Output file, default is exported_tracks.txt")
-    parser.add_option("-p", "--page", dest="startpage", type="int", default="1",
-                      help="Page to start fetching tracks from, default is 1")
-    parser.add_option("-s", "--server", dest="server", default="last.fm",
-                      help="Server to fetch track info from, default is last.fm")
-    parser.add_option("-t", "--type", dest="infotype", default="scrobbles",
-                      help="Type of information to export, scrobbles|loved|banned, default is scrobbles")
-    options, args = parser.parse_args()
-
-    if not options.username:
-        sys.exit("User name not specified, see --help")
-
-    if options.infotype == "loved":
-        infotype = "lovedtracks"
-    elif options.infotype == "banned":
-        infotype = "bannedtracks"
-    else:
-        infotype = "recenttracks"
-         
-    return options.username, options.outfile, options.startpage, options.server, infotype
-
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
     """ Connect to server and get a XML page."""
     if server == "libre.fm":
@@ -181,7 +153,19 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
         if import_finished:
             break
 
-def main(server, username, startpage, outfile, infotype='recenttracks', use_cache =False):
+def parse_line(ligne):
+    """
+    Read a last.fm extract line and return the artist and song part
+    """
+    regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
+    if regexp.match(ligne):
+        titre,artiste = regexp.findall(ligne)[0]
+    else:
+        titre, artiste = None,None
+        debug("""The following line cannot be parsed: %s""" %ligne[:-1])
+    return titre, artiste
+
+def lastexporter(server, username, startpage, outfile, infotype='recenttracks', use_cache =False):
 
     track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*)")
     #read the already existing file (if it exists) and use_cache option
