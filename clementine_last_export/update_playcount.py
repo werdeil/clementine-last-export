@@ -26,7 +26,7 @@ import os, platform
 
 from optparse import OptionParser
 import logging
-from logging import info,warning,error,debug
+from logging import info, warning, error, debug
 
 from server_management import lastexporter, parse_line
 from db_management import backup_db, update_playcount, is_in_db
