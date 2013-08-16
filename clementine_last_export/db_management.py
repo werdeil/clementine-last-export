@@ -66,5 +66,8 @@ def update_playcount(connection,artist,title,playcount):
     curseur.close()
     
 def backup_db(db_path):
+    """
+    Backup the database file
+    """
     info("Backing up database into clementine_backup.db")
     shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))

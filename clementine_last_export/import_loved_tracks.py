@@ -36,8 +36,6 @@ from db_management import backup_db, update_rating, is_in_db
 #    Functions
 #########################################################################
 
-
-
 def update_db_file(database, extract, force_update=True):
     """
     Update a database according to an extract file

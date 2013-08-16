@@ -25,7 +25,9 @@ import xml.etree.ElementTree as ET
 from optparse import OptionParser
 
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
-    """ Connect to server and get a XML page."""
+    """
+    Connect to server and get a XML page.
+    """
     if server == "libre.fm":
         baseurl = 'http://alpha.libre.fm/2.0/?'
         urlvars = dict(method='user.get%s' % tracktype,
@@ -72,19 +74,25 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
     return response
 
 def get_pageinfo(response, tracktype='recenttracks'):
-    """Check how many pages of tracks the user have."""
+    """
+    Check how many pages of tracks the user have.
+    """
     xmlpage = ET.fromstring(response)
     totalpages = xmlpage.find(tracktype).attrib.get('totalPages')
     return int(totalpages)
 
 def get_tracklist(response):
-    """Read XML page and get a list of tracks and their info."""
+    """
+    Read XML page and get a list of tracks and their info.
+    """
     xmlpage = ET.fromstring(response)
     tracklist = xmlpage.getiterator('track')
     return tracklist
 
 def parse_track(trackelement):
-    """Extract info from every track entry and output to list."""
+    """
+    Extract info from every track entry and output to list.
+    """
     if trackelement.find('artist').getchildren():
         #artist info is nested in loved/banned tracks xml
         artistname = trackelement.find('artist').find('name').text
@@ -114,11 +122,16 @@ def parse_track(trackelement):
     return output
 
 def write_tracks(tracks, outfileobj):
-    """Write tracks to an open file"""
+    """
+    Write tracks to an open file
+    """
     for fields in tracks:
         outfileobj.write(("\t".join(fields) + "\n").encode('utf-8'))
 
 def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='recenttracks', firsttrack = None):
+    """
+    Get tracks from a server
+    """
     page = startpage
     response = connect_server(server, username, page, sleep_func, tracktype)
     totalpages = get_pageinfo(response, tracktype)
@@ -166,7 +179,9 @@ def parse_line(ligne):
     return titre, artiste
 
 def lastexporter(server, username, startpage, outfile, infotype='recenttracks', use_cache =False):
-
+    """
+    Main method
+    """
     track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*)")
     #read the already existing file (if it exists) and use_cache option
     if os.path.exists(outfile) and use_cache:
