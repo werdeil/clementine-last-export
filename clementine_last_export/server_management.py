@@ -24,6 +24,8 @@ import urllib2, urllib, sys, time, re, os
 import xml.etree.ElementTree as ET
 from optparse import OptionParser
 
+from logging import info, warning, error, debug
+
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
     """
     Connect to server and get a XML page.
@@ -60,10 +62,10 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
             break
         except Exception, e:
             last_exc = e
-            print "Exception occured, retrying in %ds: %s" % (interval, e)
+            warning("Exception occured, retrying in %ds: %s" % (interval, e))
             sleep_func(interval)
     else:
-        print "Failed to open page %s" % urlvars['page']
+        error("Failed to open page %s" % urlvars['page'])
         raise last_exc
 
     response = f.read()
@@ -185,7 +187,7 @@ def lastexporter(server, username, startpage, outfile, infotype='recenttracks', 
     track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*)")
     #read the already existing file (if it exists) and use_cache option
     if os.path.exists(outfile) and use_cache:
-        print "%s is already present, it will be used as reference to speed up the import" %outfile
+        info("%s is already present, it will be used as reference to speed up the import" %outfile)
         old_file = open(outfile, "r")
         already_imported_lines = old_file.readlines()
         old_file.close()
@@ -202,7 +204,7 @@ def lastexporter(server, username, startpage, outfile, infotype='recenttracks', 
     n = 0
     try:
         for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=infotype, firsttrack=firsttrack):
-            print "Got page %s of %s.." % (page, totalpages)
+            info("Got page %s of %s.." % (page, totalpages))
             for track in tracks:
                 if infotype == 'recenttracks':
                     trackdict.setdefault(track[0], track)
@@ -218,12 +220,12 @@ def lastexporter(server, username, startpage, outfile, infotype='recenttracks', 
         with open(outfile, 'w') as outfileobj:
             tracks = sorted(trackdict.values(), reverse=True)
             write_tracks(tracks, outfileobj)
-            print "Wrote page %s-%s of %s to file %s" % (startpage, page, totalpages, outfile)
+            info("Wrote page %s-%s of %s to file %s" % (startpage, page, totalpages, outfile))
             
             for line in already_imported_lines:
                 outfileobj.write(line)
             if already_imported_lines != []:
-                print "Completed with already imported informations"
+                info("Completed with already imported informations")
             outfileobj.close()
 
 if __name__ == "__main__":
