@@ -1,3 +1,6 @@
 \.pyc
 \.py~
 \.orig
+.project
+.pydevproject
+.settings/*
