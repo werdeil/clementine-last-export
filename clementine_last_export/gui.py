@@ -22,19 +22,16 @@ Gui to run the clementine_last_export tool
 from PyQt4 import QtGui, QtCore
 
 import sys
-import threading
 from optparse import OptionParser
 import logging
 from logging import info, warning, error, debug
 from update_playcount import update_playcount
 from import_loved_tracks import import_loved_tracks
-
 import icons_rc
- 
 
 class ClemLastExportGui(QtGui.QMainWindow):
 
-    def __init__(self):    
+    def __init__(self):
         super(ClemLastExportGui, self).__init__()
         self.initUI()
         self.username = ""
@@ -170,7 +167,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.show()
         
         
-    def center(self):   
+    def center(self):
         """
         Method called to center the main window to the display screen
         """         
@@ -187,8 +184,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if self.username == '':
             self.statusBar().showMessage('Username needed')
         else:
-            self.statusBar().showMessage('Running')            
-            print "Running the process %s with the infos: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n" %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache)
+            self.statusBar().showMessage('Running')          
+            print "Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n" %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache)
             #self.target(self.username, False, self.server, "%s.txt" %self.target.__name__,
             #              1, self.backup_database, self.use_cache)
             
@@ -253,7 +250,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
     def import_completed(self, msg):
         """
-        Run when the thread is finished (normaly or not)
+        Run when the thread is finished (normally or not)
         """
         QtGui.QMessageBox.information(self, u"Operation finished", msg)        
         self.statusBar().showMessage('Import completed')
@@ -264,7 +261,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """
         about_text="""<b>Clementine Last Export</b>
         <br/><br/>
-        Developped by Vincent VERDEIL<br/><br/>
+        Developed by Vincent VERDEIL<br/><br/>
         <a href="http://code.google.com/p/clementine-last-export/">http://code.google.com/p/clementine-last-export/</a>"""
         QtGui.QMessageBox.about(self,"About Clementine Last Export", about_text)
         
@@ -289,7 +286,8 @@ class GenericThread(QtCore.QThread):
         self.function(*self.args,**self.kwargs)
         self.emit(QtCore.SIGNAL("import_completed(PyQt_PyObject)"), "Finished")
         return
-        
+
+       
 def main():
     """
     Main method of the script, called when the script is run
