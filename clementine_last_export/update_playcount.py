@@ -18,70 +18,15 @@
 Script which allows to update the playcount in the Clementine database from a last.fm extract
 """
 
-import sqlite3
-import re
-import codecs
-
 import os, platform
 
 from optparse import OptionParser
 import logging
 from logging import info, warning, error, debug
 
-from server_management import lastexporter, parse_line
-from db_management import backup_db, update_playcount, is_in_db
-
-#########################################################################
-#    Functions
-#########################################################################
-
-def update_db_file(database, extract, force_update=False):
-    """
-    Update a database according to an extract file
-    """
-    connection = sqlite3.connect(database)
-    extract_file = codecs.open(extract, encoding='utf-8')
-    biblio = {}    
-    matched = []
-    not_matched = []
-    already_ok = []
-        
-    #Loop which will read the extract and store each play to a dictionary
-    for line in extract_file.readlines():
-        titre, artiste = parse_line(line)
-        if biblio.has_key(artiste):
-            if biblio[artiste].has_key(titre):
-                biblio[artiste][titre] = biblio[artiste][titre] +1
-            else:
-                biblio[artiste][titre] = 1
-        elif artiste == None or titre == None:
-            pass
-        else:
-            biblio[artiste] = {}
-            biblio[artiste][titre] = 1
-            
-    #Loop which will try to update the database with each entry of the dictionnary           
-    for artiste in biblio.keys():
-        for titre in biblio[artiste].keys():
-            rating, original_playcount = is_in_db(connection, artiste, titre)
-            if original_playcount == -1:
-                not_matched.append(artiste+' '+titre)
-                debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
-            elif original_playcount < biblio[artiste][titre] or force_update:
-                update_playcount(connection, artiste, titre, biblio[artiste][titre])
-                matched.append(artiste+' '+titre)
-            else:
-                already_ok.append(artiste+' '+titre)
-    try:
-        connection.commit()
-    except sqlite3.Error, err:
-        connection.rollback()
-        error(unicode(err.args[0]))            
-        
-    extract_file.close()
-    connection.close()
-    return matched, not_matched, already_ok
-    
+from server_management import lastexporter
+from db_management import backup_db, update_db_file
+   
 #######################################################################
 #    Main
 #######################################################################
@@ -106,7 +51,7 @@ def update_playcount(username, input_file, server, extract_file, startpage, back
         backup_db(db_path)
 
     info("Reading extract file and updating database")    
-    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update)
+    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update, updated_part="playcount")
     
     info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
 

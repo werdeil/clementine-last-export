@@ -23,8 +23,11 @@ import sqlite3
 
 import shutil
 import os
+import codecs
 
 from logging import info, warning, error, debug
+
+from server_management import parse_line
 
 #########################################################################
 #    Functions
@@ -49,7 +52,7 @@ def is_in_db(connection,artist,title):
     curseur.close()
     return rating, playcount
 
-def update_rating(connection,artist,title,rating):
+def update_db_rating(connection,artist,title,rating):
     """
     Update rating of the given title
     """
@@ -57,7 +60,7 @@ def update_rating(connection,artist,title,rating):
     curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(rating),title, artist))
     curseur.close()    
 
-def update_playcount(connection,artist,title,playcount):
+def update_db_playcount(connection,artist,title,playcount):
     """
     Update playcount of the given title
     """
@@ -71,3 +74,61 @@ def backup_db(db_path):
     """
     info("Backing up database into clementine_backup.db")
     shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
+    
+def update_db_file(database, extract, force_update=True, updated_part="None"):
+    """
+    Update a database according to an extract file
+    """
+    connection = sqlite3.connect(database)
+    extract_file = codecs.open(extract, encoding='utf-8')
+    biblio = {}    
+    matched = []
+    not_matched = []
+    already_ok = []
+        
+    #Loop which will read the extract and store each play to a dictionary
+    for line in extract_file.readlines():
+        titre, artiste = parse_line(line)
+        if biblio.has_key(artiste):
+            if biblio[artiste].has_key(titre):
+                biblio[artiste][titre] = biblio[artiste][titre] +1
+            else:
+                biblio[artiste][titre] = 1
+        elif artiste == None or titre == None:
+            pass
+        else:
+            biblio[artiste] = {}
+            biblio[artiste][titre] = 1
+            
+    #Loop which will try to update the database with each entry of the dictionary           
+    for artiste in biblio.keys():
+        for titre in biblio[artiste].keys():
+            original_rating, original_playcount = is_in_db(connection, artiste, titre)
+            if original_rating == None or original_playcount == -1:
+                not_matched.append(artiste+' '+titre)
+                debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
+            #part to update the ratings
+            elif updated_part == "rating":
+                if original_rating == 4.5/5 and not force_update:
+                    already_ok.append(artiste+' '+titre)
+                elif original_rating < 1:
+                    update_db_rating(connection, artiste, titre, 1)
+                    matched.append(artiste+' '+titre)
+                else:
+                    already_ok.append(artiste+' '+titre)
+            #part to update the playcount
+            elif updated_part == "playcount":
+                if original_playcount < biblio[artiste][titre] or force_update:
+                    update_db_playcount(connection, artiste, titre, biblio[artiste][titre])
+                    matched.append(artiste+' '+titre)
+                else:
+                    already_ok.append(artiste+' '+titre)
+    try:
+        connection.commit()
+    except sqlite3.Error, err:
+        connection.rollback()
+        error(unicode(err.args[0]))            
+        
+    extract_file.close()
+    connection.close()
+    return matched, not_matched, already_ok 
