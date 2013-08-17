@@ -20,9 +20,8 @@ Script for exporting tracks through audioscrobbler API.
 Usage: lastexport.py -u USER [-o OUTFILE] [-p STARTPAGE] [-s SERVER]
 """
 
-import urllib2, urllib, sys, time, re, os
+import urllib2, urllib, time, re, os
 import xml.etree.ElementTree as ET
-from optparse import OptionParser
 
 from logging import info, warning, error, debug
 
@@ -33,7 +32,7 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
     if server == "libre.fm":
         baseurl = 'http://alpha.libre.fm/2.0/?'
         urlvars = dict(method='user.get%s' % tracktype,
-                    api_key=('lastexport.py-%s' % __version__).ljust(32, '-'),
+                    api_key=('clementine_last_export').ljust(32, '-'),
                     user=username,
                     page=startpage,
                     limit=200)
@@ -50,7 +49,7 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
             server = 'http://%s' % server
         baseurl = server + '/2.0/?'
         urlvars = dict(method='user.get%s' % tracktype,
-                    api_key=('lastexport.py-%s' % __version__).ljust(32, '-'),
+                    api_key=('clementine_last_export').ljust(32, '-'),
                     user=username,
                     page=startpage,
                     limit=200)
@@ -62,7 +61,7 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
             break
         except Exception, e:
             last_exc = e
-            warning("Exception occured, retrying in %ds: %s" % (interval, e))
+            warning("Exception occurred, retrying in %d s: %s" % (interval, e))
             sleep_func(interval)
     else:
         error("Failed to open page %s" % urlvars['page'])
@@ -98,21 +97,16 @@ def parse_track(trackelement):
     if trackelement.find('artist').getchildren():
         #artist info is nested in loved/banned tracks xml
         artistname = trackelement.find('artist').find('name').text
-        artistmbid = trackelement.find('artist').find('mbid').text
     else:
         artistname = trackelement.find('artist').text
-        artistmbid = trackelement.find('artist').get('mbid')
 
     if trackelement.find('album') is None:
         #no album info for loved/banned tracks
         albumname = ''
-        albummbid = ''
     else:
         albumname = trackelement.find('album').text
-        albummbid = trackelement.find('album').get('mbid')
 
     trackname = trackelement.find('name').text
-    trackmbid = trackelement.find('mbid').text
     date = trackelement.find('date').get('uts')
 
     output = [date, trackname, artistname, albumname]
@@ -148,7 +142,7 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
             response =  connect_server(server, username, page, sleep_func, tracktype)
 
         tracklist = get_tracklist(response)
-		
+
         tracks = []
         for trackelement in tracklist:
             # do not export the currently playing track.
@@ -227,8 +221,3 @@ def lastexporter(server, username, startpage, outfile, infotype='recenttracks', 
             if already_imported_lines != []:
                 info("Completed with already imported informations")
             outfileobj.close()
-
-if __name__ == "__main__":
-    parser = OptionParser()
-    username, outfile, startpage, server, infotype = get_options(parser)
-    main(server, username, startpage, outfile, infotype)
