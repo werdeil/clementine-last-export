@@ -26,34 +26,46 @@ from logging import info, warning, error, debug
 
 from server_management import lastexporter
 from db_management import backup_db, update_db_file
+
+from PyQt4 import QtCore
     
 #######################################################################
 #    Main
 #######################################################################
 
-def import_loved_tracks(username, input_file, server, extract_file, startpage, backup, force_update=True, use_cache=False):
-    """
-    Main method
-    """
-    operating_system = platform.system()
-    if operating_system == 'Linux':
-        db_path = '~/.config/Clementine/'
-    if operating_system == 'Darwin':
-        db_path = '~/Library/Application Support/Clementine/'
-    if operating_system == 'Windows':
-        db_path = '%USERPROFILE%\\.config\\Clementine\\'''
-    
-    if not input_file:
-        info("No input file given, extracting directly from %s servers" %server)
-        lastexporter(server, username, startpage, extract_file, infotype='lovedtracks', use_cache=use_cache)
+class Import_loved_tracks(QtCore.QThread):
 
-    if backup:
-        backup_db(db_path)
+    def __init__(self, username, input_file, server, extract_file, startpage, backup, force_update=True, use_cache=False):
+        QtCore.QThread.__init__(self)
+        self.username = username
+        self.input_file = input_file
+        self.server = server
+        self.extract_file = extract_file
+        self.startpage = startpage
+        self.backup = backup
+        self.force_update = force_update
+        self.use_cache = use_cache
     
-    info("Reading extract file and updating database")    
-    matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), extract_file, force_update, updated_part="rating")
+    def run(self):
+        operating_system = platform.system()
+        if operating_system == 'Linux':
+            db_path = '~/.config/Clementine/'
+        if operating_system == 'Darwin':
+            db_path = '~/Library/Application Support/Clementine/'
+        if operating_system == 'Windows':
+            db_path = '%USERPROFILE%\\.config\\Clementine\\'''
+        
+        if not self.input_file:
+            info("No input file given, extracting directly from %s servers" %self.server)
+            lastexporter(self.server, self.username, self.startpage, self.extract_file, infotype='lovedtracks', use_cache=self.use_cache)
     
-    info("%d entries have been updated, %d entries have already the correct note, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
+        if self.backup:
+            backup_db(db_path)
+        
+        info("Reading extract file and updating database")    
+        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), self.extract_file, self.force_update, updated_part="rating")
+        
+        info("%d entries have been updated, %d entries have already the correct note, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
 
 
 if __name__ == "__main__":
@@ -69,6 +81,7 @@ if __name__ == "__main__":
     parser.add_option("-s", "--server", dest="server", default="last.fm", help="server to fetch track info from, default is last.fm")
     parser.add_option("-b", "--backup", dest="backup", default=False, action="store_true", help="backup db first")
     parser.add_option("-i", "--input-file", dest="input_file", default=False, action="store_true", help="use the already extracted file as input")
+    parser.add_option("-c", "--cache", dest="use_cache", default=False, action="store_true", help="use cache for import")
     parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
     
@@ -78,4 +91,5 @@ if __name__ == "__main__":
     if options.debug:
         logging.basicConfig(level="DEBUG")
         
-    import_loved_tracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup, options.use_cache)
+    thread = Import_loved_tracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup, options.use_cache)
+    thread.run()

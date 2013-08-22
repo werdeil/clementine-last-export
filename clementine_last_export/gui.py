@@ -25,8 +25,8 @@ import sys
 from optparse import OptionParser
 import logging
 from logging import info, warning, error, debug
-from update_playcount import update_playcount
-from import_loved_tracks import import_loved_tracks
+from update_playcount import Update_playcount
+from import_loved_tracks import Import_loved_tracks
 import icons_rc
 
 class ClemLastExportGui(QtGui.QMainWindow):
@@ -39,7 +39,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.backup_database = True
         self.force_update = False
         self.use_cache = True
-        self.target = update_playcount
+        self.target = Update_playcount
         
         
     def initUI(self):
@@ -190,10 +190,12 @@ class ClemLastExportGui(QtGui.QMainWindow):
             #              1, self.backup_database, self.use_cache)
             
             ## Thread part commented as it is not working as expected yet
-            thread1 = GenericThread(self.target, self.username, False, self.server,
+            thread1 = self.target(self.username, False, self.server,
                 "cache_%s.txt" %self.target.__name__, 1, self.backup_database, self.force_update, self.use_cache)
-            self.connect(thread1, QtCore.SIGNAL("import_completed(PyQt_PyObject)"), self.import_completed)
-            thread1.start()
+            
+            
+            #self.connect(thread1, QtCore.SIGNAL("import_completed(PyQt_PyObject)"), self.import_completed)
+            thread1.run()
         
         
     def usernameChanged(self,text):
@@ -244,9 +246,9 @@ class ClemLastExportGui(QtGui.QMainWindow):
         Method called when clicked on one of the radiobuttons
         """
         if button.text() == 'Import playcount':
-            self.target = update_playcount
+            self.target = Update_playcount
         else:
-            self.target = import_loved_tracks
+            self.target = Import_loved_tracks
         
     def import_completed(self, msg):
         """
@@ -270,22 +272,6 @@ class ClemLastExportGui(QtGui.QMainWindow):
         Method called when the aboutQt dialog is requested
         """
         QtGui.QMessageBox.aboutQt(self)
-        
-
-class GenericThread(QtCore.QThread):
-    def __init__(self, function, *args, **kwargs):
-        QtCore.QThread.__init__(self)
-        self.function = function
-        self.args = args
-        self.kwargs = kwargs
-
-    def __del__(self):
-        self.wait()
-        
-    def run(self):
-        self.function(*self.args,**self.kwargs)
-        self.emit(QtCore.SIGNAL("import_completed(PyQt_PyObject)"), "Finished")
-        return
 
        
 def main():
