@@ -145,6 +145,13 @@ class ClemLastExportGui(QtGui.QMainWindow):
         use_cache_checkbox.stateChanged.connect(self.useCacheChanged)
         use_cache_checkbox.setToolTip('Check this box if you want to use the cache file from a previous import')        
         
+        self.progressbar = QtGui.QProgressBar(self)
+        self.progressbar.setMinimum(1)
+        self.progressbar.setMaximum(100)
+        self.progressbar.resize(260, 20)
+        self.progressbar.move(20, 300)
+        
+        
         ###Run button
         update_button = QtGui.QPushButton('Run', self)
         update_button.setToolTip('Run the script')
@@ -152,7 +159,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         update_button.move(190, 130)  
         update_button.clicked.connect(self.run_script)
         #Run button can be triggered by pressing the return key
-        update_button.setShortcut(update_button.tr("Return"))
+        update_button.setShortcut(update_button.tr("Return"))        
         
         ##Global window
         self.resize(300, 350)
@@ -192,13 +199,18 @@ class ClemLastExportGui(QtGui.QMainWindow):
             ## Thread part commented as it is not working as expected yet
             thread1 = self.target(self.username, False, self.server,
                 "cache_%s.txt" %self.target.__name__, 1, self.backup_database, self.force_update, self.use_cache)
-            
-            
-            #self.connect(thread1, QtCore.SIGNAL("import_completed(PyQt_PyObject)"), self.import_completed)
+                
+            thread1.partDone.connect(self.updatePBar)
+           
             thread1.run()
+    
+    def updatePBar(self, val):
+        """
+        Method called when the thread progress
+        """
+        self.progressbar.setValue(val)   
         
-        
-    def usernameChanged(self,text):
+    def usernameChanged(self, text):
         """
         Method called when the username text field is changed
         """
