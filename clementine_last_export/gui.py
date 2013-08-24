@@ -134,7 +134,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         #Checkbox to activate the force of the update (see tooltip for more information)
         force_update_checkbox = QtGui.QCheckBox('Force update', self)
         force_update_checkbox.resize(200, 20)
-        force_update_checkbox.move(20, 250)
+        force_update_checkbox.move(20, 260)
         force_update_checkbox.stateChanged.connect(self.forceUpdateChanged)
         force_update_checkbox.setToolTip('Check this box if you want to force the update\n - of loved tracks already rated at 4.5 stars\n - of playcounts higher locally than the one on the music server')
         
@@ -148,7 +148,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         use_cache_checkbox.setToolTip('Check this box if you want to use the cache file from a previous import')        
         
         self.progressbar = QtGui.QProgressBar(self)
-        self.progressbar.setMinimum(1)
+        self.progressbar.setMinimum(0)
         self.progressbar.setMaximum(100)
         self.progressbar.resize(260, 20)
         self.progressbar.move(20, 320)        
@@ -192,8 +192,9 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if self.username == '':
             self.statusBar().showMessage('Username needed')
         else:
+            self.progressbar.reset()
             self.statusBar().showMessage('Running')          
-            info("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
+            debug("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
                     %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache))
             
             thread1 = self.target(self.username, False, self.server,

@@ -75,7 +75,7 @@ def backup_db(db_path):
     info("Backing up database into clementine_backup.db")
     shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
     
-def update_db_file(database, extract, force_update=True, updated_part="None"):
+def update_db_file(database, extract, force_update=True, updated_part="None", thread_signal=None):
     """
     Update a database according to an extract file
     """
@@ -87,6 +87,7 @@ def update_db_file(database, extract, force_update=True, updated_part="None"):
     already_ok = []
         
     #Loop which will read the extract and store each play to a dictionary
+    nb_titles = 0
     for line in extract_file.readlines():
         titre, artiste = parse_line(line)
         if biblio.has_key(artiste):
@@ -94,13 +95,15 @@ def update_db_file(database, extract, force_update=True, updated_part="None"):
                 biblio[artiste][titre] = biblio[artiste][titre] +1
             else:
                 biblio[artiste][titre] = 1
+                nb_titles += 1
         elif artiste == None or titre == None:
             pass
         else:
             biblio[artiste] = {}
             biblio[artiste][titre] = 1
             
-    #Loop which will try to update the database with each entry of the dictionary           
+    #Loop which will try to update the database with each entry of the dictionary
+    titles_updated = 0           
     for artiste in biblio.keys():
         for titre in biblio[artiste].keys():
             original_rating, original_playcount = is_in_db(connection, artiste, titre)
@@ -123,6 +126,10 @@ def update_db_file(database, extract, force_update=True, updated_part="None"):
                     matched.append(artiste + ' ' + titre)
                 else:
                     already_ok.append(artiste + ' ' + titre)
+            if thread_signal:
+                titles_updated += 1
+                thread_signal.emit(50*titles_updated/nb_titles+50)
+                
     try:
         connection.commit()
     except sqlite3.Error, err:

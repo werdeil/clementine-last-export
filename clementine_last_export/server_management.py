@@ -174,7 +174,7 @@ def parse_line(ligne):
         debug("""The following line cannot be parsed: %s""" %ligne[:-1])
     return titre, artiste
 
-def lastexporter(server, username, startpage, outfile, infotype='recenttracks', use_cache =False):
+def lastexporter(server, username, startpage, outfile, infotype='recenttracks', use_cache=False, thread_signal=None):
     """
     Main method
     """
@@ -199,6 +199,8 @@ def lastexporter(server, username, startpage, outfile, infotype='recenttracks', 
     try:
         for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=infotype, firsttrack=firsttrack):
             info("Got page %s of %s.." % (page, totalpages))
+            if thread_signal:
+                thread_signal.emit(50*page/totalpages)
             for track in tracks:
                 if infotype == 'recenttracks':
                     trackdict.setdefault(track[0], track)

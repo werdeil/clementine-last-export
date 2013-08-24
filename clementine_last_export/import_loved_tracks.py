@@ -45,6 +45,7 @@ class Import_loved_tracks(QtCore.QThread):
         self.use_cache = use_cache
     
     def run(self):
+        self.partDone.emit(0)
         operating_system = platform.system()
         if operating_system == 'Linux':
             db_path = '~/.config/Clementine/'
@@ -52,19 +53,18 @@ class Import_loved_tracks(QtCore.QThread):
             db_path = '~/Library/Application Support/Clementine/'
         if operating_system == 'Windows':
             db_path = '%USERPROFILE%\\.config\\Clementine\\'''
-        self.partDone.emit(10)
         
         if not self.input_file:
             info("No input file given, extracting directly from %s servers" %self.server)
-            lastexporter(self.server, self.username, self.startpage, self.extract_file, infotype='lovedtracks', use_cache=self.use_cache)
+            lastexporter(self.server, self.username, self.startpage, self.extract_file, infotype='lovedtracks', use_cache=self.use_cache, thread_signal=self.partDone)
         self.partDone.emit(50)
         
         if self.backup:
             backup_db(db_path)
-        self.partDone.emit(60)
+        self.partDone.emit(51)
         
         info("Reading extract file and updating database")    
-        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), self.extract_file, self.force_update, updated_part="rating")
+        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), self.extract_file, self.force_update, updated_part="rating", thread_signal=self.partDone)
         info("%d entries have been updated, %d entries have already the correct note, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
         self.partDone.emit(100)
 
