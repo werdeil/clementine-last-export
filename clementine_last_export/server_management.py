@@ -145,7 +145,7 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
 
         tracks = []
         for trackelement in tracklist:
-            # do not export the currently playing track.
+            # Do not export the currently playing track.
             if not trackelement.attrib.has_key("nowplaying") or not trackelement.attrib["nowplaying"]:
                 track = parse_track(trackelement)
                 if track == firsttrack:
@@ -168,9 +168,9 @@ def parse_line(ligne):
     """
     regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
     if regexp.match(ligne):
-        titre,artiste = regexp.findall(ligne)[0]
+        titre, artiste = regexp.findall(ligne)[0]
     else:
-        titre, artiste = None,None
+        titre, artiste = None, None
         debug("""The following line cannot be parsed: %s""" %ligne[:-1])
     return titre, artiste
 

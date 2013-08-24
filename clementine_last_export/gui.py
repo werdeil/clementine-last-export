@@ -16,7 +16,7 @@
 #
 
 """
-Gui to run the clementine_last_export tool
+GUI to run the clementine_last_export tool
 """
 
 from PyQt4 import QtGui, QtCore
@@ -27,6 +27,8 @@ import logging
 from logging import info, warning, error, debug
 from update_playcount import Update_playcount
 from import_loved_tracks import Import_loved_tracks
+
+# Import icons resource to have the icon image
 import icons_rc
 
 class ClemLastExportGui(QtGui.QMainWindow):
@@ -98,7 +100,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.username = field_username.textChanged[str].connect(self.usernameChanged)
         
         ###Part target
-        # Defintition of the two radio buttons
+        # Definition of the two radio buttons
         playcount_radio_button = QtGui.QRadioButton('Import playcount', self)
         playcount_radio_button.resize(160, 20)
         playcount_radio_button.move(20, 140)
@@ -123,7 +125,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         #Checkbox to activate or not the backup of the database
         backup_checkbox = QtGui.QCheckBox('Backup database', self)
-        backup_checkbox.resize(200,20)
+        backup_checkbox.resize(200, 20)
         backup_checkbox.move(20, 230)
         #Backup is activated by default
         backup_checkbox.toggle()
@@ -131,14 +133,14 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         #Checkbox to activate the force of the update (see tooltip for more information)
         force_update_checkbox = QtGui.QCheckBox('Force update', self)
-        force_update_checkbox.resize(200,20)
+        force_update_checkbox.resize(200, 20)
         force_update_checkbox.move(20, 250)
         force_update_checkbox.stateChanged.connect(self.forceUpdateChanged)
         force_update_checkbox.setToolTip('Check this box if you want to force the update\n - of loved tracks already rated at 4.5 stars\n - of playcounts higher locally than the one on the music server')
         
         #Checkbox to activate the use of a cache file
         use_cache_checkbox = QtGui.QCheckBox('Use cache file (if available)', self)
-        use_cache_checkbox.resize(200,20)
+        use_cache_checkbox.resize(200, 20)
         use_cache_checkbox.move(20, 290)
         #Cache file is used by default        
         use_cache_checkbox.toggle()
@@ -191,17 +193,16 @@ class ClemLastExportGui(QtGui.QMainWindow):
             self.statusBar().showMessage('Username needed')
         else:
             self.statusBar().showMessage('Running')          
-            print "Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n" %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache)
-            #self.target(self.username, False, self.server, "%s.txt" %self.target.__name__,
-            #              1, self.backup_database, self.use_cache)
+            info("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
+                    %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache))
             
-            ## Thread part commented as it is not working as expected yet
             thread1 = self.target(self.username, False, self.server,
                 "cache_%s.txt" %self.target.__name__, 1, self.backup_database, self.force_update, self.use_cache)
                 
             thread1.partDone.connect(self.updatePBar)
            
             thread1.run()
+            
     
     def updatePBar(self, val):
         """
@@ -215,7 +216,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """
         self.username = text
         
-    def serverChanged(self,text):
+    def serverChanged(self, text):
         """
         Method called when the server combobox is changed
         """

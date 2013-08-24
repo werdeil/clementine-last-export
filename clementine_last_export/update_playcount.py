@@ -20,18 +20,14 @@ Script which allows to update the playcount in the Clementine database from a la
 
 import os, platform
 
+from PyQt4 import QtCore
+
 from optparse import OptionParser
 import logging
 from logging import info, warning, error, debug
 
 from server_management import lastexporter
 from db_management import backup_db, update_db_file
-
-from PyQt4 import QtCore
-   
-#######################################################################
-#    Main
-#######################################################################
 
 class Update_playcount(QtCore.QThread):
     

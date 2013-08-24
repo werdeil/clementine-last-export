@@ -105,24 +105,24 @@ def update_db_file(database, extract, force_update=True, updated_part="None"):
         for titre in biblio[artiste].keys():
             original_rating, original_playcount = is_in_db(connection, artiste, titre)
             if original_rating == None or original_playcount == -1:
-                not_matched.append(artiste+' '+titre)
-                debug("""Song %s from %s cannot be found in the database""" %(titre,artiste))
+                not_matched.append(artiste + ' ' + titre)
+                debug("""Song %s from %s cannot be found in the database""" %(titre, artiste))
             #part to update the ratings
             elif updated_part == "rating":
                 if original_rating == 4.5/5 and not force_update:
-                    already_ok.append(artiste+' '+titre)
+                    already_ok.append(artiste + ' ' + titre)
                 elif original_rating < 1:
                     update_db_rating(connection, artiste, titre, 1)
-                    matched.append(artiste+' '+titre)
+                    matched.append(artiste + ' ' + titre)
                 else:
-                    already_ok.append(artiste+' '+titre)
+                    already_ok.append(artiste + ' ' + titre)
             #part to update the playcount
             elif updated_part == "playcount":
                 if original_playcount < biblio[artiste][titre] or force_update:
                     update_db_playcount(connection, artiste, titre, biblio[artiste][titre])
-                    matched.append(artiste+' '+titre)
+                    matched.append(artiste + ' ' + titre)
                 else:
-                    already_ok.append(artiste+' '+titre)
+                    already_ok.append(artiste + ' ' + titre)
     try:
         connection.commit()
     except sqlite3.Error, err:
