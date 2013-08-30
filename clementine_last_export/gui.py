@@ -21,7 +21,9 @@ GUI to run the clementine_last_export tool
 
 from PyQt4 import QtGui, QtCore
 
-import sys
+import sys, os
+import platform
+
 from optparse import OptionParser
 import logging
 from logging import info, warning, error, debug
@@ -192,13 +194,16 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if self.username == '':
             self.statusBar().showMessage('Username needed')
         else:
+            cache_path = self.get_cachepath() 
+            cache_file = cache_path+"cache_%s.txt" %self.target.__name__
+            print cache_file, os.path.exists(cache_path)
             self.progressbar.reset()
             self.statusBar().showMessage('Running')          
             debug("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
                     %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache))
             
             thread1 = self.target(self.username, False, self.server,
-                "cache_%s.txt" %self.target.__name__, 1, self.backup_database, self.force_update, self.use_cache)
+                cache_file, 1, self.backup_database, self.force_update, self.use_cache)
                 
             thread1.partDone.connect(self.updatePBar)
            
@@ -222,8 +227,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         Method called when the server combobox is changed
         """
         self.server = text
-        
-        
+                
     def backupChanged(self, state):
         """
         Method called when the backup checkbox changes its state
@@ -231,8 +235,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if state == QtCore.Qt.Checked:
             self.backup_database = True
         else:
-            self.backup_database = False
-        
+            self.backup_database = False        
         
     def forceUpdateChanged(self, state):
         """
@@ -241,8 +244,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if state == QtCore.Qt.Checked:
             self.force_update = True
         else:
-            self.force_update = False
-        
+            self.force_update = False        
         
     def useCacheChanged(self, state):
         """
@@ -251,8 +253,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if state == QtCore.Qt.Checked:
             self.use_cache = True
         else:
-            self.use_cache = False
-    
+            self.use_cache = False    
     
     def targetChanged(self, button):
         """
@@ -285,6 +286,23 @@ class ClemLastExportGui(QtGui.QMainWindow):
         Method called when the aboutQt dialog is requested
         """
         QtGui.QMessageBox.aboutQt(self)
+        
+    def get_cachepath(self):
+        """
+        Method called to create the cache repository next to the Clementine data
+        """
+        operating_system = platform.system()
+        if operating_system == 'Linux':
+            cache_path = '~/.config/Clementine_last_export/'
+        if operating_system == 'Darwin':
+            cache_path = '~/Library/Application Support/Clementine_last_export/'
+        if operating_system == 'Windows':
+            cache_path = '%USERPROFILE%\\.config\\Clementine_last_export\\'''
+        
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
+            
+        return cache_path
 
        
 def main():
