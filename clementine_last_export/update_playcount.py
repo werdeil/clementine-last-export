@@ -18,7 +18,7 @@
 Script which allows to update the playcount in the Clementine database from a last.fm extract
 """
 
-import os, platform
+import os
 
 from PyQt4 import QtCore
 
@@ -27,7 +27,7 @@ import logging
 from logging import info, warning, error, debug
 
 from server_management import lastexporter
-from db_management import backup_db, update_db_file
+from db_management import backup_db, update_db_file, get_dbpath
 
 class Update_playcount(QtCore.QThread):
     
@@ -43,16 +43,10 @@ class Update_playcount(QtCore.QThread):
         self.backup = backup
         self.force_update = force_update
         self.use_cache = use_cache
+        self.db_path = get_dbpath()
             
     def run(self):
         self.partDone.emit(0)
-        operating_system = platform.system()
-        if operating_system == 'Linux':
-            db_path = '~/.config/Clementine/'
-        if operating_system == 'Darwin':
-            db_path = '~/Library/Application Support/Clementine/'
-        if operating_system == 'Windows':
-            db_path = '%USERPROFILE%\\.config\\Clementine\\'''
         
         if not self.input_file:
             info("No input file given, extracting directly from %s servers" %self.server)
@@ -60,11 +54,11 @@ class Update_playcount(QtCore.QThread):
         self.partDone.emit(50)
         
         if self.backup:
-            backup_db(db_path)
+            backup_db(self.db_path)
         self.partDone.emit(60)
         
         info("Reading extract file and updating database")    
-        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %db_path), self.extract_file, self.force_update, updated_part="playcount", thread_signal=self.partDone)
+        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %self.db_path), self.extract_file, self.force_update, updated_part="playcount", thread_signal=self.partDone)
         info("%d entries have been updated, %d entries have already the correct playcount, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
         self.partDone.emit(100)
                 

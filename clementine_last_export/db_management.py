@@ -20,6 +20,7 @@ Script gathering all the methods for the management of the database
 """
 
 import sqlite3
+import platform
 
 import shutil
 import os
@@ -67,6 +68,16 @@ def update_db_playcount(connection,artist,title,playcount):
     curseur = connection.cursor()
     curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount), title, artist))
     curseur.close()
+    
+def get_dbpath(self):
+    operating_system = platform.system()
+    if operating_system == 'Linux':
+        db_path = '~/.config/Clementine/'
+    if operating_system == 'Darwin':
+        db_path = '~/Library/Application Support/Clementine/'
+    if operating_system == 'Windows':
+        db_path = '%USERPROFILE%\\.config\\Clementine\\'''
+    return db_path
     
 def backup_db(db_path):
     """
