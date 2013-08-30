@@ -70,6 +70,10 @@ def update_db_playcount(connection, artist, title, playcount):
     curseur.close()
     
 def get_dbpath():
+    """
+    Give the path to the Clementine database depending on the operating system
+    WARNING: it hasn't been tested on Windows nor on OSX
+    """
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
