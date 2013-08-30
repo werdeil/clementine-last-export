@@ -34,7 +34,7 @@ from server_management import parse_line
 #    Functions
 #########################################################################
 
-def is_in_db(connection,artist,title):
+def is_in_db(connection, artist, title):
     """
     Return note and playcount of the track if it is in the database, (None,-1) if it is not the case
     """
@@ -53,7 +53,7 @@ def is_in_db(connection,artist,title):
     curseur.close()
     return rating, playcount
 
-def update_db_rating(connection,artist,title,rating):
+def update_db_rating(connection, artist, title, rating):
     """
     Update rating of the given title
     """
@@ -61,7 +61,7 @@ def update_db_rating(connection,artist,title,rating):
     curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(rating),title, artist))
     curseur.close()    
 
-def update_db_playcount(connection,artist,title,playcount):
+def update_db_playcount(connection, artist, title, playcount):
     """
     Update playcount of the given title
     """
@@ -69,7 +69,7 @@ def update_db_playcount(connection,artist,title,playcount):
     curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount), title, artist))
     curseur.close()
     
-def get_dbpath(self):
+def get_dbpath():
     operating_system = platform.system()
     if operating_system == 'Linux':
         db_path = '~/.config/Clementine/'
