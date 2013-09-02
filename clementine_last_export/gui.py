@@ -23,6 +23,7 @@ from PyQt4 import QtGui, QtCore
 
 import sys, os
 import platform
+import pickle
 
 from optparse import OptionParser
 import logging
@@ -37,13 +38,19 @@ class ClemLastExportGui(QtGui.QMainWindow):
 
     def __init__(self):
         super(ClemLastExportGui, self).__init__()
+        self.configfile = "config.pkl"
+        if os.path.exists(self.configfile):
+            self.load_config()
+        else:
+            self.config = {}
+            self.config["username"] = ""
+            self.config["server"] = "last.fm"
+            self.config["backup_database"] = True
+            self.config["force_update"] = False
+            self.config["use_cache"] = True
+            self.config["target"] = Update_playcount
         self.initUI()
-        self.username = ""
-        self.server = "last.fm"
-        self.backup_database = True
-        self.force_update = False
-        self.use_cache = True
-        self.target = Update_playcount
+        
         
         
     def initUI(self):
@@ -99,7 +106,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         lbl_username.move(20, 90)
         field_username = QtGui.QLineEdit(self)
         field_username.move(140, 90)
-        self.username = field_username.textChanged[str].connect(self.usernameChanged)
+        field_username.textChanged[str].connect(self.usernameChanged)
         
         ###Part target
         # Definition of the two radio buttons
@@ -191,19 +198,20 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """
         Method called when pressing the "Run" button on the UI
         """
-        if self.username == '':
+        if self.config["username"] == '':
             self.statusBar().showMessage('Username needed')
         else:
             cache_path = self.get_cachepath() 
-            cache_file = cache_path+"cache_%s.txt" %self.target.__name__
+            cache_file = cache_path+"cache_%s.txt" %self.config["target"].__name__
             print cache_file, os.path.exists(cache_path)
+            self.store_config()
             self.progressbar.reset()
             self.statusBar().showMessage('Running')          
             debug("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
-                    %(self.target, self.server, self.username, self.backup_database, self.force_update, self.use_cache))
+                    %(self.config["target"], self.config["server"], self.config["username"], self.config["backup_database"], self.config["force_update"], self.config["use_cache"]))
             
-            thread1 = self.target(self.username, False, self.server,
-                cache_file, 1, self.backup_database, self.force_update, self.use_cache)
+            thread1 = self.config["target"](self.config["username"], False, self.config["server"],
+                cache_file, 1, self.config["backup_database"], self.config["force_update"], self.config["use_cache"])
                 
             thread1.partDone.connect(self.updatePBar)
            
@@ -220,49 +228,49 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """
         Method called when the username text field is changed
         """
-        self.username = text
+        self.config["username"] = text
         
     def serverChanged(self, text):
         """
         Method called when the server combobox is changed
         """
-        self.server = text
+        self.config["server"] = text
                 
     def backupChanged(self, state):
         """
         Method called when the backup checkbox changes its state
         """
         if state == QtCore.Qt.Checked:
-            self.backup_database = True
+            self.config["backup_database"] = True
         else:
-            self.backup_database = False        
+            self.config["backup_database"] = False        
         
     def forceUpdateChanged(self, state):
         """
         Method called when the force update checkbox changes its state
         """
         if state == QtCore.Qt.Checked:
-            self.force_update = True
+            self.config["force_update"] = True
         else:
-            self.force_update = False        
+            self.config["force_update"] = False        
         
     def useCacheChanged(self, state):
         """
         Method called when the use cache checkbox changes its state
         """
         if state == QtCore.Qt.Checked:
-            self.use_cache = True
+            self.config["use_cache"] = True
         else:
-            self.use_cache = False    
+            self.config["use_cache"] = False    
     
     def targetChanged(self, button):
         """
         Method called when clicked on one of the radiobuttons
         """
         if button.text() == 'Import playcount':
-            self.target = Update_playcount
+            self.config["target"] = Update_playcount
         else:
-            self.target = Import_loved_tracks
+            self.config["target"] = Import_loved_tracks
         
     def import_completed(self, msg):
         """
@@ -304,6 +312,11 @@ class ClemLastExportGui(QtGui.QMainWindow):
             
         return cache_path
 
+    def store_config(self):
+        pickle.dump(self.config, open(self.configfile, 'w'))
+        
+    def load_config(self):
+        self.config = pickle.load( open(self.configfile))
        
 def main():
     """
