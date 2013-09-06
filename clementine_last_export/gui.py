@@ -31,6 +31,7 @@ from logging import info, warning, error, debug
 from update_playcount import Update_playcount
 from import_loved_tracks import Import_loved_tracks
 
+SERVER_LIST = ["last.fm", "libre.fm"]
 # Import icons resource to have the icon image
 import icons_rc
 
@@ -96,8 +97,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         lbl_combo_server.move(20, 60)        
         
         server_combo = QtGui.QComboBox(self)
-        server_combo.addItem("last.fm")
-        server_combo.addItem("libre.fm")
+        for server in SERVER_LIST:
+            server_combo.addItem(server)
         server_combo.move(140, 55)
         server_combo.activated[str].connect(self.serverChanged)
         
@@ -117,9 +118,6 @@ class ClemLastExportGui(QtGui.QMainWindow):
         lovedtracks_radio_button.resize(160, 20)
         lovedtracks_radio_button.move(20, 170)
         
-        #the playcount radio button is selected by default
-        playcount_radio_button.toggle() 
-        
         #Creation of the group of radio buttons
         radio_group = QtGui.QButtonGroup(self)
         radio_group.addButton(playcount_radio_button)
@@ -136,8 +134,6 @@ class ClemLastExportGui(QtGui.QMainWindow):
         backup_checkbox = QtGui.QCheckBox('Backup database', self)
         backup_checkbox.resize(200, 20)
         backup_checkbox.move(20, 230)
-        #Backup is activated by default
-        backup_checkbox.toggle()
         backup_checkbox.stateChanged.connect(self.backupChanged)
         
         #Checkbox to activate the force of the update (see tooltip for more information)
@@ -151,8 +147,6 @@ class ClemLastExportGui(QtGui.QMainWindow):
         use_cache_checkbox = QtGui.QCheckBox('Use cache file (if available)', self)
         use_cache_checkbox.resize(200, 20)
         use_cache_checkbox.move(20, 290)
-        #Cache file is used by default        
-        use_cache_checkbox.toggle()
         use_cache_checkbox.stateChanged.connect(self.useCacheChanged)
         use_cache_checkbox.setToolTip('Check this box if you want to use the cache file from a previous import')        
         
@@ -176,6 +170,20 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.center()
         self.setWindowTitle('Clementine Last Export')  
         self.setWindowIcon(QtGui.QIcon(':/myresources/clementine_last_export.png'))
+        
+        #Update option according to config
+        server_combo.setCurrentIndex(SERVER_LIST.index(self.config["server"]))
+        field_username.setText(self.config["username"])
+        if self.config["target"] == Update_playcount:
+            playcount_radio_button.toggle()
+        else:
+            lovedtracks_radio_button.toggle()
+        if self.config["backup_database"]:
+            backup_checkbox.toggle()
+        if self.config["use_cache"]:        
+            use_cache_checkbox.toggle()
+        if self.config["force_update"]:
+            force_update_checkbox.toggle()
         
         #Status bar 
         self.statusBar().showMessage('Ready')
@@ -316,7 +324,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         pickle.dump(self.config, open(self.configfile, 'w'))
         
     def load_config(self):
-        self.config = pickle.load( open(self.configfile))
+        self.config = pickle.load(open(self.configfile))
        
 def main():
     """
