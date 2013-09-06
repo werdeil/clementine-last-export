@@ -32,6 +32,7 @@ from update_playcount import Update_playcount
 from import_loved_tracks import Import_loved_tracks
 
 SERVER_LIST = ["last.fm", "libre.fm"]
+
 # Import icons resource to have the icon image
 import icons_rc
 
@@ -52,8 +53,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
             self.config["use_cache"] = True
             self.config["target"] = Update_playcount
         self.initUI()
-        
-        
+                
         
     def initUI(self):
         """
@@ -225,9 +225,10 @@ class ClemLastExportGui(QtGui.QMainWindow):
             
             thread1 = self.config["target"](self.config["username"], False, self.config["server"],
                 cache_file, 1, self.config["backup_database"], self.config["force_update"], self.config["use_cache"])
-                
+            
+            #Connect the partDone signal of the thread to the progress bar    
             thread1.partDone.connect(self.updatePBar)
-           
+            #Run the thread
             thread1.run()
             
     
