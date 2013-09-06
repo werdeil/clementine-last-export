@@ -60,95 +60,95 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """   
         #MenuBar
         ##Exit menu
-        exitAction = QtGui.QAction('&Exit', self)        
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(QtGui.qApp.quit)
+        self.exitAction = QtGui.QAction('&Exit', self)        
+        self.exitAction.setShortcut('Ctrl+Q')
+        self.exitAction.setStatusTip('Exit application')
+        self.exitAction.triggered.connect(QtGui.qApp.quit)
         
         ##Import menu
-        importAction = QtGui.QAction('&Run', self)
-        importAction.triggered.connect(self.run_script)
+        self.importAction = QtGui.QAction('&Run', self)
+        self.importAction.triggered.connect(self.run_script)
         
         ##About menu
-        aboutAction = QtGui.QAction('&About Clementine Last Export', self)
-        aboutAction.triggered.connect(self.open_about)
-        aboutQtAction = QtGui.QAction('&About Qt', self)
-        aboutQtAction.triggered.connect(self.open_aboutQt)
+        self.aboutAction = QtGui.QAction('&About Clementine Last Export', self)
+        self.aboutAction.triggered.connect(self.open_about)
+        self.aboutQtAction = QtGui.QAction('&About Qt', self)
+        self.aboutQtAction.triggered.connect(self.open_aboutQt)
 
         ##Menubar getting all the previously defined menus
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(exitAction)
-        fileMenu2 = menubar.addMenu('&Import')
-        fileMenu2.addAction(importAction)         
-        fileMenu3 = menubar.addMenu('&About')
-        fileMenu3.addAction(aboutAction)
-        fileMenu3.addAction(aboutQtAction) 
+        self.menubar = self.menuBar()
+        self.fileMenu = self.menubar.addMenu('&File')
+        self.fileMenu.addAction(self.exitAction)
+        self.fileMenu2 = self.menubar.addMenu('&Import')
+        self.fileMenu2.addAction(self.importAction)         
+        self.fileMenu3 = self.menubar.addMenu('&About')
+        self.fileMenu3.addAction(self.aboutAction)
+        self.fileMenu3.addAction(self.aboutQtAction) 
         
         #Main window
         ##Part import
-        lbl_part_import = QtGui.QLabel('Information about the server', self)
-        lbl_part_import.resize(200, 20)
-        lbl_part_import.move(15, 30)
+        self.lbl_part_import = QtGui.QLabel('Information about the server', self)
+        self.lbl_part_import.resize(200, 20)
+        self.lbl_part_import.move(15, 30)
         
         ###Server selection
-        lbl_combo_server  = QtGui.QLabel('Select the server', self)
-        lbl_combo_server.resize(120, 20)
-        lbl_combo_server.move(20, 60)        
+        self.lbl_combo_server  = QtGui.QLabel('Select the server', self)
+        self.lbl_combo_server.resize(120, 20)
+        self.lbl_combo_server.move(20, 60)        
         
-        server_combo = QtGui.QComboBox(self)
+        self.server_combo = QtGui.QComboBox(self)
         for server in SERVER_LIST:
-            server_combo.addItem(server)
-        server_combo.move(140, 55)
-        server_combo.activated[str].connect(self.serverChanged)
+            self.server_combo.addItem(server)
+        self.server_combo.move(140, 55)
+        self.server_combo.activated[str].connect(self.serverChanged)
         
         ###Server credentials
-        lbl_username  = QtGui.QLabel('Username', self)
-        lbl_username.move(20, 90)
-        field_username = QtGui.QLineEdit(self)
-        field_username.move(140, 90)
-        field_username.textChanged[str].connect(self.usernameChanged)
+        self.lbl_username  = QtGui.QLabel('Username', self)
+        self.lbl_username.move(20, 90)
+        self.field_username = QtGui.QLineEdit(self)
+        self.field_username.move(140, 90)
+        self.field_username.textChanged[str].connect(self.usernameChanged)
         
         ###Part target
         # Definition of the two radio buttons
-        playcount_radio_button = QtGui.QRadioButton('Import playcount', self)
-        playcount_radio_button.resize(160, 20)
-        playcount_radio_button.move(20, 140)
-        lovedtracks_radio_button = QtGui.QRadioButton('Import loved tracks', self)
-        lovedtracks_radio_button.resize(160, 20)
-        lovedtracks_radio_button.move(20, 170)
+        self.playcount_radio_button = QtGui.QRadioButton('Import playcount', self)
+        self.playcount_radio_button.resize(160, 20)
+        self.playcount_radio_button.move(20, 140)
+        self.lovedtracks_radio_button = QtGui.QRadioButton('Import loved tracks', self)
+        self.lovedtracks_radio_button.resize(160, 20)
+        self.lovedtracks_radio_button.move(20, 170)
         
         #Creation of the group of radio buttons
-        radio_group = QtGui.QButtonGroup(self)
-        radio_group.addButton(playcount_radio_button)
-        radio_group.addButton(lovedtracks_radio_button)
+        self.radio_group = QtGui.QButtonGroup(self)
+        self.radio_group.addButton(self.playcount_radio_button)
+        self.radio_group.addButton(self.lovedtracks_radio_button)
         #Only one radio button can be selected at once
-        radio_group.setExclusive(True)
-        radio_group.buttonClicked.connect(self.targetChanged)
+        self.radio_group.setExclusive(True)
+        self.radio_group.buttonClicked.connect(self.targetChanged)
                 
         ##Part options
-        lbl_part_update = QtGui.QLabel('Options', self)
-        lbl_part_update.move(15, 200)
+        self.lbl_part_update = QtGui.QLabel('Options', self)
+        self.lbl_part_update.move(15, 200)
         
         #Checkbox to activate or not the backup of the database
-        backup_checkbox = QtGui.QCheckBox('Backup database', self)
-        backup_checkbox.resize(200, 20)
-        backup_checkbox.move(20, 230)
-        backup_checkbox.stateChanged.connect(self.backupChanged)
+        self.backup_checkbox = QtGui.QCheckBox('Backup database', self)
+        self.backup_checkbox.resize(200, 20)
+        self.backup_checkbox.move(20, 230)
+        self.backup_checkbox.stateChanged.connect(self.backupChanged)
         
         #Checkbox to activate the force of the update (see tooltip for more information)
-        force_update_checkbox = QtGui.QCheckBox('Force update', self)
-        force_update_checkbox.resize(200, 20)
-        force_update_checkbox.move(20, 260)
-        force_update_checkbox.stateChanged.connect(self.forceUpdateChanged)
-        force_update_checkbox.setToolTip('Check this box if you want to force the update\n - of loved tracks already rated at 4.5 stars\n - of playcounts higher locally than the one on the music server')
+        self.force_update_checkbox = QtGui.QCheckBox('Force update', self)
+        self.force_update_checkbox.resize(200, 20)
+        self.force_update_checkbox.move(20, 260)
+        self.force_update_checkbox.stateChanged.connect(self.forceUpdateChanged)
+        self.force_update_checkbox.setToolTip('Check this box if you want to force the update\n - of loved tracks already rated at 4.5 stars\n - of playcounts higher locally than the one on the music server')
         
         #Checkbox to activate the use of a cache file
-        use_cache_checkbox = QtGui.QCheckBox('Use cache file (if available)', self)
-        use_cache_checkbox.resize(200, 20)
-        use_cache_checkbox.move(20, 290)
-        use_cache_checkbox.stateChanged.connect(self.useCacheChanged)
-        use_cache_checkbox.setToolTip('Check this box if you want to use the cache file from a previous import')        
+        self.use_cache_checkbox = QtGui.QCheckBox('Use cache file (if available)', self)
+        self.use_cache_checkbox.resize(200, 20)
+        self.use_cache_checkbox.move(20, 290)
+        self.use_cache_checkbox.stateChanged.connect(self.useCacheChanged)
+        self.use_cache_checkbox.setToolTip('Check this box if you want to use the cache file from a previous import')        
         
         self.progressbar = QtGui.QProgressBar(self)
         self.progressbar.setMinimum(0)
@@ -157,13 +157,13 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.progressbar.move(20, 320)        
         
         ###Run button
-        update_button = QtGui.QPushButton('Run', self)
-        update_button.setToolTip('Run the script')
-        update_button.resize(update_button.sizeHint())
-        update_button.move(190, 150)  
-        update_button.clicked.connect(self.run_script)
+        self.update_button = QtGui.QPushButton('Run', self)
+        self.update_button.setToolTip('Run the script')
+        self.update_button.resize(self.update_button.sizeHint())
+        self.update_button.move(190, 150)  
+        self.update_button.clicked.connect(self.run_script)
         #Run button can be triggered by pressing the return key
-        update_button.setShortcut(update_button.tr("Return"))        
+        self.update_button.setShortcut(self.update_button.tr("Return"))        
         
         ##Global window
         self.resize(300, 370)
@@ -171,26 +171,30 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.setWindowTitle('Clementine Last Export')  
         self.setWindowIcon(QtGui.QIcon(':/myresources/clementine_last_export.png'))
         
-        #Update option according to config
-        server_combo.setCurrentIndex(SERVER_LIST.index(self.config["server"]))
-        field_username.setText(self.config["username"])
-        if self.config["target"] == Update_playcount:
-            playcount_radio_button.toggle()
-        else:
-            lovedtracks_radio_button.toggle()
-        if self.config["backup_database"]:
-            backup_checkbox.toggle()
-        if self.config["use_cache"]:        
-            use_cache_checkbox.toggle()
-        if self.config["force_update"]:
-            force_update_checkbox.toggle()
-        
         #Status bar 
         self.statusBar().showMessage('Ready')
         
+        #Set the UI according to the value of config dictionnary
+        self.restore_config()
+        
         #Show the main window  
         self.show()
-        
+    
+    def restore_config(self):
+        #Update option according to config
+        self.server_combo.setCurrentIndex(SERVER_LIST.index(self.config["server"]))
+        self.field_username.setText(self.config["username"])
+        if self.config["target"] == Update_playcount:
+            self.playcount_radio_button.toggle()
+        else:
+            self.lovedtracks_radio_button.toggle()
+        if self.config["backup_database"]:
+            self.backup_checkbox.toggle()
+        if self.config["use_cache"]:        
+            self.use_cache_checkbox.toggle()
+        if self.config["force_update"]:
+            self.force_update_checkbox.toggle()
+            
         
     def center(self):
         """
