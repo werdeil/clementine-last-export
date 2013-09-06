@@ -39,7 +39,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
 
     def __init__(self):
         super(ClemLastExportGui, self).__init__()
-        self.configfile = "config.pkl"
+        self.cache_path = self.get_cachepath()
+        self.configfile = self.cache_path+"config.pkl"
         if os.path.exists(self.configfile):
             self.load_config()
         else:
@@ -174,14 +175,16 @@ class ClemLastExportGui(QtGui.QMainWindow):
         #Status bar 
         self.statusBar().showMessage('Ready')
         
-        #Set the UI according to the value of config dictionnary
+        #Set the UI according to the value of config
         self.restore_config()
         
         #Show the main window  
         self.show()
     
     def restore_config(self):
-        #Update option according to config
+        """
+        Method called to update the UI according to the config dictionary
+        """
         self.server_combo.setCurrentIndex(SERVER_LIST.index(self.config["server"]))
         self.field_username.setText(self.config["username"])
         if self.config["target"] == Update_playcount:
@@ -212,11 +215,9 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """
         if self.config["username"] == '':
             self.statusBar().showMessage('Username needed')
-        else:
-            cache_path = self.get_cachepath() 
-            cache_file = cache_path+"cache_%s.txt" %self.config["target"].__name__
-            print cache_file, os.path.exists(cache_path)
-            self.store_config()
+        else: 
+            cache_file = self.cache_path+"cache_%s.txt" %self.config["target"].__name__
+            print cache_file, os.path.exists(self.cache_path)
             self.progressbar.reset()
             self.statusBar().showMessage('Running')          
             debug("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
@@ -241,12 +242,14 @@ class ClemLastExportGui(QtGui.QMainWindow):
         Method called when the username text field is changed
         """
         self.config["username"] = text
+        self.store_config()
         
     def serverChanged(self, text):
         """
         Method called when the server combobox is changed
         """
         self.config["server"] = text
+        self.store_config()
                 
     def backupChanged(self, state):
         """
@@ -255,7 +258,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if state == QtCore.Qt.Checked:
             self.config["backup_database"] = True
         else:
-            self.config["backup_database"] = False        
+            self.config["backup_database"] = False
+        self.store_config()        
         
     def forceUpdateChanged(self, state):
         """
@@ -264,7 +268,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if state == QtCore.Qt.Checked:
             self.config["force_update"] = True
         else:
-            self.config["force_update"] = False        
+            self.config["force_update"] = False
+        self.store_config()        
         
     def useCacheChanged(self, state):
         """
@@ -273,7 +278,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if state == QtCore.Qt.Checked:
             self.config["use_cache"] = True
         else:
-            self.config["use_cache"] = False    
+            self.config["use_cache"] = False
+        self.store_config()    
     
     def targetChanged(self, button):
         """
@@ -283,6 +289,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
             self.config["target"] = Update_playcount
         else:
             self.config["target"] = Import_loved_tracks
+        self.store_config()
         
     def import_completed(self, msg):
         """
