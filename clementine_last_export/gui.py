@@ -41,7 +41,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
     def __init__(self):
         super(ClemLastExportGui, self).__init__()
         self.cache_path = self.get_cachepath()
-        self.configfile = self.cache_path+"config.pkl"
+        self.configfile = os.path.expanduser("%sconfig.pkl" %self.cache_path)
         if os.path.exists(self.configfile):
             self.load_config()
         else:
@@ -216,8 +216,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         if self.config["username"] == '':
             self.statusBar().showMessage('Username needed')
         else: 
-            cache_file = self.cache_path+"cache_%s.txt" %self.config["target"].__name__
-            print cache_file, os.path.exists(self.cache_path)
+            cache_file = os.path.expanduser("%scache_%s.txt" %(self.cache_path, self.config["target"].__name__))
             self.progressbar.reset()
             self.statusBar().showMessage('Running')          
             debug("Running the process %s with the info: server = %s, username = %s, backup = %s, force update = %s, use cache = %s\n"
@@ -321,14 +320,14 @@ class ClemLastExportGui(QtGui.QMainWindow):
         """
         operating_system = platform.system()
         if operating_system == 'Linux':
-            cache_path = '~/.config/Clementine_last_export/'
+            cache_path = '~/.clementine_last_export/'
         if operating_system == 'Darwin':
-            cache_path = '~/Library/Application Support/Clementine_last_export/'
+            cache_path = '~/Library/Application Support/clementine_last_export/'
         if operating_system == 'Windows':
-            cache_path = '%USERPROFILE%\\.config\\Clementine_last_export\\'''
+            cache_path = '%USERPROFILE%\\.clementine_last_export\\'''
         
-        if not os.path.exists(cache_path):
-            os.makedirs(cache_path)
+        if not os.path.exists(os.path.expanduser(cache_path)):
+            os.makedirs(os.path.expanduser(cache_path))
             
         return cache_path
 
