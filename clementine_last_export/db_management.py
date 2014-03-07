@@ -16,7 +16,7 @@
 #
 
 """
-Script gathering all the methods for the management of the database
+Module gathering all the functions for the management of the database
 """
 
 import sqlite3
@@ -36,29 +36,42 @@ from server_management import parse_line
 
 def is_in_db(connection, artist, title):
     """
-    Return note and playcount of the track if it is in the database, (None,-1) if it is not the case
+    Search the track in the connected database and return its note and playcount
+    
+    :param connection: Connection to the SQL database
+    :param artist: Artist of the track
+    :param title: Title of the track
+    :type connection: sqlite3.Connection
+    :type artist: string
+    :type title: string
+    :return: Note and playcount of the track in the database if it is found, (None,-1) if it is not the case
+    :rtype: tuple
     """
     rating = None
     playcount = -1
+    
     curseur = connection.cursor()
-    curseur.execute("""SELECT rating,playcount FROM songs WHERE title = ? AND artist = ? """ ,(title, artist))
+    curseur.execute("""SELECT rating,playcount FROM songs WHERE title = ? AND artist = ? """,(title, artist))
     result = curseur.fetchall()
     if len(result)>0:
         rating, playcount = result[0]
     else:
-        curseur.execute("""SELECT rating,playcount FROM songs WHERE title LIKE ? AND artist LIKE ? """ ,(title, artist))
+        curseur.execute("""SELECT rating,playcount FROM songs WHERE title LIKE ? AND artist LIKE ? """, (title, artist))
         result = curseur.fetchall()
         if len(result)>0:
             rating, playcount = result[0]
+            
     curseur.close()
+    
     return rating, playcount
+
 
 def update_db_rating(connection, artist, title, rating):
     """
     Update rating of the given title
     """
     curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(rating),title, artist))
+    curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""", (int(rating), title, artist))
     curseur.close()    
 
 def update_db_playcount(connection, artist, title, playcount):
@@ -66,7 +79,7 @@ def update_db_playcount(connection, artist, title, playcount):
     Update playcount of the given title
     """
     curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""" ,(int(playcount), title, artist))
+    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""", (int(playcount), title, artist))
     curseur.close()
     
 def get_dbpath():
