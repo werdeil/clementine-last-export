@@ -45,7 +45,7 @@ def is_in_db(connection, artist, title):
     :type artist: string
     :type title: string
     :return: Note and playcount of the track in the database if it is found, (None,-1) if it is not the case
-    :rtype: tuple
+    :rtype: tuple(int, int) or tuple(None, -1)
     """
     rating = None
     playcount = -1
@@ -81,7 +81,7 @@ def update_db_rating(connection, artist, title, rating):
     :return: None
     """
     curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""", (int(rating), title, artist))
+    curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""", (rating, title, artist))
     curseur.close()    
 
 def update_db_playcount(connection, artist, title, playcount):
@@ -89,7 +89,7 @@ def update_db_playcount(connection, artist, title, playcount):
     Update playcount of the given title
     """
     curseur = connection.cursor()
-    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""", (int(playcount), title, artist))
+    curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""", (playcount, title, artist))
     curseur.close()
     
 def get_dbpath():
