@@ -68,7 +68,17 @@ def is_in_db(connection, artist, title):
 
 def update_db_rating(connection, artist, title, rating):
     """
-    Update rating of the given title
+    Update the rating of a given track in the connected database
+    
+    :param connection: Connection to the SQL database
+    :param artist: Artist of the track
+    :param title: Title of the track
+    :param rating: Rating value
+    :type connection: sqlite3.Connection
+    :type artist: string
+    :type title: string
+    :type rating: int
+    :return: None
     """
     curseur = connection.cursor()
     curseur.execute("""UPDATE songs SET rating = ? WHERE title LIKE ? AND artist LIKE ?""", (int(rating), title, artist))
