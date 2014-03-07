@@ -86,7 +86,17 @@ def update_db_rating(connection, artist, title, rating):
 
 def update_db_playcount(connection, artist, title, playcount):
     """
-    Update playcount of the given title
+    Update the playcount of a given track in the connected database
+    
+    :param connection: Connection to the SQL database
+    :param artist: Artist of the track
+    :param title: Title of the track
+    :param playcount: Playcount value
+    :type connection: sqlite3.Connection
+    :type artist: string
+    :type title: string
+    :type playcount: int
+    :return: None
     """
     curseur = connection.cursor()
     curseur.execute("""UPDATE songs SET playcount = ? WHERE title LIKE ? AND artist LIKE ?""", (playcount, title, artist))
@@ -94,8 +104,11 @@ def update_db_playcount(connection, artist, title, playcount):
     
 def get_dbpath():
     """
-    Give the path to the Clementine database depending on the operating system
-    WARNING: it hasn't been tested on Windows nor on OSX
+    Give the path to the Clementine database depending on the operating system in which the function is called
+    
+    :return: Path to the database
+    :rtype: string
+    :warning: This function hasn't been tested on Windows nor on OSX
     """
     operating_system = platform.system()
     if operating_system == 'Linux':
@@ -108,14 +121,31 @@ def get_dbpath():
     
 def backup_db(db_path):
     """
-    Backup the database file
+    Create a backup of the database file by copying it into clementine_backup.db file
+    
+    :param db_path: Path to the database
+    :type db_path: string
+    :return: None
     """
     info("Backing up database into clementine_backup.db")
     shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
     
 def update_db_file(database, extract, force_update=True, updated_part="None", thread_signal=None):
     """
-    Update a database according to an extract file
+    Update the ratings or the playcounts of a database according to an extract file
+    
+    :param database: Path to the database to update
+    :param extract: Path the extract file
+    :param force_update: Option to update the database fields independently to their previous values
+    :param updated_part: Either "playcount" or "rating", define the field to update in the database
+    :param thread_signal: Thread signal to be emitted to the GUI
+    :type database: string
+    :type extract: string
+    :type force_update: boolean
+    :type update_part: string
+    :type thread_signal: Thread.signal
+    :return: 3 lists: the list of updated tracks, the list of not matched tracks and the list of tracks that were already up to date
+    :rtype: tuple(list, list, list)
     """
     connection = sqlite3.connect(database)
     extract_file = codecs.open(extract, encoding='utf-8')
@@ -176,4 +206,5 @@ def update_db_file(database, extract, force_update=True, updated_part="None", th
         
     extract_file.close()
     connection.close()
+    
     return matched, not_matched, already_ok 
