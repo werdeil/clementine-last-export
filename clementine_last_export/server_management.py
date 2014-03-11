@@ -33,13 +33,13 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
     :param startpage: Page of the server where to start the importation
-    :param sleep_func: Function
+    :param sleep_func: Function to be called to wait when the server is not responding
     :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'    
     :type server: string
     :type username: string
     :type startpage: int
     :type sleep_func: function
-    :type tracktype: string    
+    :type tracktype: string
     :return: response from the request the server
     :rtype: string
     """
@@ -106,6 +106,11 @@ def get_pageinfo(response, tracktype='recenttracks'):
 def get_tracklist(response):
     """
     Read XML page and get a list of tracks and their info.
+    
+    :param response: Response from a request to the server (xml page of the server)
+    :type response: string
+    :return: list of tracks in the page
+    :rtype: list
     """
     xmlpage = ET.fromstring(response)
     tracklist = xmlpage.getiterator('track')
@@ -114,6 +119,11 @@ def get_tracklist(response):
 def parse_track(trackelement):
     """
     Extract info from every track entry and output to list.
+    
+    :param trackelement: xml element representing a track
+    :type trackelement: xml.etree.ElementTree
+    :return: List containing the date, title, artist and albumname corresponding to the track
+    :rtype: list
     """
     if trackelement.find('artist').getchildren():
         #artist info is nested in loved/banned tracks xml
@@ -154,6 +164,19 @@ def write_tracks(tracks, outfileobj):
 def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='recenttracks', firsttrack = None):
     """
     Get tracks from a server
+    
+    :param server: Server on which the information will be extracted
+    :param username: Username to use on the server
+    :param startpage: Page of the server where to start the importation
+    :param sleep_func: Function to be called to wait when the server is not responding
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks' 
+    :param firsttrack: track information corresponding the the last track imported in the previous import
+    :type server: string
+    :type username: string
+    :type startpage: int
+    :type sleep_func: function
+    :type tracktype: string
+    :type firsttrack: list    
     """
     page = startpage
     response = connect_server(server, username, page, sleep_func, tracktype)
