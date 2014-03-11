@@ -16,8 +16,9 @@
 #
 
 """
-Script for exporting tracks through audioscrobbler API.
-Usage: lastexport.py -u USER [-o OUTFILE] [-p STARTPAGE] [-s SERVER]
+Module for exporting tracks through audioscrobbler API.
+
+Usage in command line: lastexport.py -u USER [-o OUTFILE] [-p STARTPAGE] [-s SERVER]
 """
 
 import urllib2, urllib, time, re, os
@@ -28,6 +29,19 @@ from logging import info, warning, error, debug
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
     """
     Connect to server and get a XML page.
+    
+    :param server: Server on which the information will be extracted
+    :param username: Username to use on the server
+    :param startpage: Page of the server where to start the importation
+    :param sleep_func: Function
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'    
+    :type server: string
+    :type username: string
+    :type startpage: int
+    :type sleep_func: function
+    :type tracktype: string    
+    :return: response from the request the server
+    :rtype: string
     """
     if server == "libre.fm":
         baseurl = 'http://alpha.libre.fm/2.0/?'
@@ -77,6 +91,13 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
 def get_pageinfo(response, tracktype='recenttracks'):
     """
     Check how many pages of tracks the user have.
+    
+    :param response: ?
+    :param tracktype: ?
+    :type response: string
+    :type tracktype: string
+    :return: Number of total pages to import
+    :rtype: int
     """
     xmlpage = ET.fromstring(response)
     totalpages = xmlpage.find(tracktype).attrib.get('totalPages')
@@ -120,6 +141,12 @@ def parse_track(trackelement):
 def write_tracks(tracks, outfileobj):
     """
     Write tracks to an open file
+    
+    :param tracks: list of tracks, containing th fields to be written
+    :param outfileobj: File object in which the tracks will be written 
+    :type tracks: list
+    :type outfileobj: File
+    :return: None
     """
     for fields in tracks:
         outfileobj.write(("\t".join(fields) + "\n").encode('utf-8'))
@@ -164,15 +191,20 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
 
 def parse_line(ligne):
     """
-    Read a last.fm extract line and return the artist and song part
+    Read an extracted line and return the artist and song part
+    
+    :param ligne: Line from the server to parse
+    :type ligne: string
+    :return: The title and the artist included in the line
+    :rtype: tuple(string, string)
     """
     regexp = re.compile(""".*?\t(.*?)\t(.*?)\t.*""")
     if regexp.match(ligne):
-        titre, artiste = regexp.findall(ligne)[0]
+        title, artist = regexp.findall(ligne)[0]
     else:
-        titre, artiste = None, None
+        title, artist = None, None
         debug("""The following line cannot be parsed: %s""" %ligne[:-1])
-    return titre, artiste
+    return title, artist
 
 def lastexporter(server, username, startpage, outfile, infotype='recenttracks', use_cache=False, thread_signal=None):
     """
