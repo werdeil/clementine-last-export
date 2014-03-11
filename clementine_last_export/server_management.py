@@ -17,8 +17,6 @@
 
 """
 Module for exporting tracks through audioscrobbler API.
-
-Usage in command line: lastexport.py -u USER [-o OUTFILE] [-p STARTPAGE] [-s SERVER]
 """
 
 import urllib2, urllib, time, re, os
@@ -92,8 +90,8 @@ def get_pageinfo(response, tracktype='recenttracks'):
     """
     Check how many pages of tracks the user have.
     
-    :param response: ?
-    :param tracktype: ?
+    :param response: Xml page given by the server
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks' 
     :type response: string
     :type tracktype: string
     :return: Number of total pages to import
@@ -229,9 +227,25 @@ def parse_line(ligne):
         debug("""The following line cannot be parsed: %s""" %ligne[:-1])
     return title, artist
 
-def lastexporter(server, username, startpage, outfile, infotype='recenttracks', use_cache=False, thread_signal=None):
+def lastexporter(server, username, startpage, outfile, tracktype='recenttracks', use_cache=False, thread_signal=None):
     """
-    Main method
+    Function called to import the information from the server and store it in a dedicated file
+    
+    :param server: Server on which the information will be extracted
+    :param username: Username to use on the server
+    :param startpage: Page of the server where to start the importation
+    :param outfile: Path to the file where the information will be stored
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'
+    :param use_cache: Option to use the previously downloaded information
+    :param thread_signal: Thread signal given from the GUI
+    :type server: string
+    :type username: string
+    :type startpage: int
+    :type outfile: string
+    :type tracktype: string
+    :type use_cache: boolean
+    :type thread_signal: Thread.Signal
+    :return: None
     """
     track_regexp = re.compile("(.*?)\t(.*?)\t(.*?)\t(.*)")
     #read the already existing file (if it exists) and use_cache option
@@ -252,12 +266,12 @@ def lastexporter(server, username, startpage, outfile, infotype='recenttracks', 
     totalpages = -1  # ditto
     n = 0
     try:
-        for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=infotype, firsttrack=firsttrack):
+        for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=tracktype, firsttrack=firsttrack):
             info("Got page %s of %s.." % (page, totalpages))
             if thread_signal:
-                thread_signal.emit(50*page/totalpages)
+                thread_signal.emit(50*page/totalpages) #the import takes 50% of the progress bar
             for track in tracks:
-                if infotype == 'recenttracks':
+                if tracktype == 'recenttracks':
                     trackdict.setdefault(track[0], track)
                 else:
                     #Can not use timestamp as key for loved/banned tracks as it's not unique
