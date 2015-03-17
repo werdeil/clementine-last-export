@@ -1,6 +1,7 @@
-\.pyc
-\.py~
-\.orig
+*.pyc
+*.py~
+*.orig
 .project
 .pydevproject
 .settings/*
+build/*
