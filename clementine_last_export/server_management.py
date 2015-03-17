@@ -15,18 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-Module for exporting tracks through audioscrobbler API.
-"""
+"""Module for exporting tracks through audioscrobbler API."""
 
 import urllib2, urllib, time, re, os
 import xml.etree.ElementTree as ET
 
-from logging import info, warning, error, debug
-
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
-    """
-    Connect to server and get a XML page.
+    """Connect to server and get a XML page.
     
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
@@ -87,8 +82,7 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
     return response
 
 def get_pageinfo(response, tracktype='recenttracks'):
-    """
-    Check how many pages of tracks the user have.
+    """Check how many pages of tracks the user have.
     
     :param response: Xml page given by the server
     :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks' 
@@ -102,8 +96,7 @@ def get_pageinfo(response, tracktype='recenttracks'):
     return int(totalpages)
 
 def get_tracklist(response):
-    """
-    Read XML page and get a list of tracks and their info.
+    """Read XML page and get a list of tracks and their info.
     
     :param response: Response from a request to the server (xml page of the server)
     :type response: string
@@ -115,8 +108,7 @@ def get_tracklist(response):
     return tracklist
 
 def parse_track(trackelement):
-    """
-    Extract info from every track entry and output to list.
+    """Extract info from every track entry and output to list.
     
     :param trackelement: xml element representing a track
     :type trackelement: xml.etree.ElementTree
@@ -147,10 +139,9 @@ def parse_track(trackelement):
     return output
 
 def write_tracks(tracks, outfileobj):
-    """
-    Write tracks to an open file
+    """Write tracks to an open file
     
-    :param tracks: list of tracks, containing th fields to be written
+    :param tracks: list of tracks, containing the fields to be written
     :param outfileobj: File object in which the tracks will be written 
     :type tracks: list
     :type outfileobj: File
@@ -160,8 +151,7 @@ def write_tracks(tracks, outfileobj):
         outfileobj.write(("\t".join(fields) + "\n").encode('utf-8'))
 
 def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='recenttracks', firsttrack = None):
-    """
-    Get tracks from a server
+    """Get tracks from a server
     
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
@@ -211,8 +201,7 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
             break
 
 def parse_line(ligne):
-    """
-    Read an extracted line and return the artist and song part
+    """Read an extracted line and return the artist and song part
     
     :param ligne: Line from the server to parse
     :type ligne: string
@@ -228,8 +217,7 @@ def parse_line(ligne):
     return title, artist
 
 def lastexporter(server, username, startpage, outfile, tracktype='recenttracks', use_cache=False, thread_signal=None):
-    """
-    Function called to import the information from the server and store it in a dedicated file
+    """Function called to import the information from the server and store it in a dedicated file
     
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
@@ -292,3 +280,9 @@ def lastexporter(server, username, startpage, outfile, tracktype='recenttracks',
             if already_imported_lines != []:
                 info("Completed with already imported informations")
             outfileobj.close()
+
+#Test functions to be run with pytest
+def test_parse_line():
+    assert parse_line("text\tJohn Doe\tTrack 1\ttext") == ("John Doe", "Track 1")
+    
+
