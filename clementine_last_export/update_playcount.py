@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Script which allows to update the playcount in the Clementine database from a last.fm extract
-"""
+"""Script which allows to update the playcount in the Clementine database from a last.fm extract"""
 
 import os
 

@@ -15,9 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-Module gathering all the functions for the management of the database
-"""
+"""Module gathering all the functions for the management of the database"""
 
 import sqlite3
 import platform
@@ -35,8 +33,7 @@ from server_management import parse_line
 #########################################################################
 
 def is_in_db(connection, artist, title):
-    """
-    Search the track in the connected database and return its note and playcount
+    """Search the track in the connected database and return its note and playcount
     
     :param connection: Connection to the SQL database
     :param artist: Artist of the track
@@ -67,8 +64,7 @@ def is_in_db(connection, artist, title):
 
 
 def update_db_rating(connection, artist, title, rating):
-    """
-    Update the rating of a given track in the connected database
+    """Update the rating of a given track in the connected database
     
     :param connection: Connection to the SQL database
     :param artist: Artist of the track
@@ -85,8 +81,7 @@ def update_db_rating(connection, artist, title, rating):
     curseur.close()    
 
 def update_db_playcount(connection, artist, title, playcount):
-    """
-    Update the playcount of a given track in the connected database
+    """Update the playcount of a given track in the connected database
     
     :param connection: Connection to the SQL database
     :param artist: Artist of the track
@@ -103,8 +98,7 @@ def update_db_playcount(connection, artist, title, playcount):
     curseur.close()
     
 def get_dbpath():
-    """
-    Give the path to the Clementine database depending on the operating system in which the function is called
+    """Give the path to the Clementine database depending on the operating system in which the function is called
     
     :return: Path to the database
     :rtype: string
@@ -120,8 +114,7 @@ def get_dbpath():
     return db_path
     
 def backup_db(db_path):
-    """
-    Create a backup of the database file by copying it into clementine_backup.db file
+    """Create a backup of the database file by copying it into clementine_backup.db file
     
     :param db_path: Path to the database
     :type db_path: string
@@ -131,8 +124,7 @@ def backup_db(db_path):
     shutil.copy(os.path.expanduser("%s/clementine.db" %db_path), os.path.expanduser("%s/clementine_backup.db" %db_path))
     
 def update_db_file(database, extract, force_update=True, updated_part="None", thread_signal=None):
-    """
-    Update the ratings or the playcounts of a database according to an extract file
+    """Update the ratings or the playcounts of a database according to an extract file
     
     :param database: Path to the database to update
     :param extract: Path the extract file

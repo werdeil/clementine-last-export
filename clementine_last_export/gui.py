@@ -15,9 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-Module containing the GUI of the clementine_last_export tool
-"""
+"""Module containing the GUI of the clementine_last_export tool"""
 
 from PyQt4 import QtGui, QtCore
 
@@ -39,9 +37,7 @@ import icons_rc
 class ClemLastExportGui(QtGui.QMainWindow):
 
     def __init__(self):
-        """
-        Init function of the class, called at each creation
-        """
+        """Init function of the class, called at each creation"""
         super(ClemLastExportGui, self).__init__()
         self.cache_path = self.get_cachepath()
         self.configfile = os.path.expanduser("%sconfig.pkl" %self.cache_path)
@@ -59,8 +55,8 @@ class ClemLastExportGui(QtGui.QMainWindow):
                 
         
     def initUI(self):
-        """
-        Initialisation of the UI, called during the creation of an instance of the class, to create the main window and its elements
+        """Initialisation of the UI, called during the creation of an instance of the 
+        class, to create the main window and its elements
         """   
         #MenuBar
         ##Exit menu
@@ -185,8 +181,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.show()
     
     def restore_config(self):
-        """
-        Function called to update the UI according to the configuration dictionary
+        """Function called to update the UI according to the configuration dictionary
         """
         self.server_combo.setCurrentIndex(SERVER_LIST.index(self.config["server"]))
         self.field_username.setText(self.config["username"])
@@ -203,9 +198,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
             
         
     def center(self):
-        """
-        Function called to center the main window to the display screen
-        """         
+        """Function called to center the main window to the display screen"""         
         qr = self.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -213,9 +206,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         
         
     def run_script(self):
-        """
-        Function called when pressing the "Run" button on the UI
-        """
+        """Function called when pressing the "Run" button on the UI"""
         if self.config["username"] == '':
             self.statusBar().showMessage('Username needed')
         else: 
@@ -235,8 +226,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
             
     
     def updatePBar(self, val):
-        """
-        Function called when the thread progress
+        """Function called when the thread progress
         
         :param val: Value of the thread progress
         :type val: float
@@ -244,8 +234,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.progressbar.setValue(val)   
         
     def usernameChanged(self, text):
-        """
-        Function called when the username text field is changed
+        """Function called when the username text field is changed
         
         :param text: Text written in the text field by the user, representing his username
         :type text: string
@@ -254,8 +243,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.store_config()
         
     def serverChanged(self, text):
-        """
-        Function called when the server combobox is changed
+        """Function called when the server combobox is changed
         
         :param text: Value of the selected element in the combobox
         :type text: string
@@ -264,8 +252,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.store_config()
                 
     def backupChanged(self, state):
-        """
-        Function called when the "backup database" checkbox changes its state
+        """Function called when the "backup database" checkbox changes its state
         
         :param state: State of the "backup database" checkbox, True if the database shall be backed up
         :type state: boolean
@@ -277,8 +264,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.store_config()        
         
     def forceUpdateChanged(self, state):
-        """
-        Function called when the "force update" checkbox changes its state
+        """Function called when the "force update" checkbox changes its state
         
         :param state: State of the "force update" checkbox, True if the update is forced
         :type state: boolean
@@ -290,8 +276,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.store_config()        
         
     def useCacheChanged(self, state):
-        """
-        Function called when the "use cache" checkbox changes its state
+        """Function called when the "use cache" checkbox changes its state
         
         :param state: State of the "use cahce" checkbox, True if the cache shall be used
         :type state: boolean
@@ -303,8 +288,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.store_config()    
     
     def targetChanged(self, button):
-        """
-        Function called when clicked on one of the radiobuttons to select which information shall be imported
+        """Function called when clicked on one of the radiobuttons to select which information shall be imported
         
         :param button: Radiobutton clicked (as they are exclusive, it means that the other one is no longer clicked)
         :type button: QtGui.QRadioButton
@@ -316,8 +300,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.store_config()
         
     def import_completed(self, msg):
-        """
-        Function called when the thread is finished (normally or not)
+        """Function called when the thread is finished (normally or not)
         
         :param message: Message sent from the thread
         :type message: string
@@ -326,9 +309,7 @@ class ClemLastExportGui(QtGui.QMainWindow):
         self.statusBar().showMessage('Import completed')
         
     def open_about(self):
-        """
-        Function called when the about dialog is requested
-        """
+        """Function called when the about dialog is requested"""
         about_text="""<b>Clementine Last Export</b>
         <br/><br/>
         Developed by Vincent VERDEIL<br/><br/>
@@ -336,14 +317,11 @@ class ClemLastExportGui(QtGui.QMainWindow):
         QtGui.QMessageBox.about(self,"About Clementine Last Export", about_text)
         
     def open_aboutQt(self):
-        """
-        Function called when the aboutQt dialog is requested
-        """
+        """Function called when the aboutQt dialog is requested"""
         QtGui.QMessageBox.aboutQt(self)
         
     def get_cachepath(self):
-        """
-        Function called to create the cache repository next to the Clementine data
+        """Function called to create the cache repository next to the Clementine data
         
         :return: Path to the cache directory in which the file will be stored
         :rtype: string
@@ -362,21 +340,17 @@ class ClemLastExportGui(QtGui.QMainWindow):
         return cache_path
 
     def store_config(self):
-        """
-        Function called to stored the configuration of the UI for the next use in a configuration file
-        """
+        """Function called to stored the configuration of the UI for the next use in a 
+        configuration file"""
         pickle.dump(self.config, open(self.configfile, 'w'))
         
     def load_config(self):
-        """
-        Function called to load the configuraiton of the UI from a configuration file
+        """Function called to load the configuraiton of the UI from a configuration file
         """
         self.config = pickle.load(open(self.configfile))
        
 def main():
-    """
-    Main method of the script, called when the script is run
-    """
+    """Main method of the script, called when the script is run"""
     app = QtGui.QApplication(sys.argv)
     cleg = ClemLastExportGui()
     sys.exit(app.exec_())

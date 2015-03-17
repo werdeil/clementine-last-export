@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Script which allows to gives 5 stars in the Clementine database for last.fm loved tracks
-"""
+"""Script which allows to gives 5 stars in the Clementine database for last.fm loved tracks"""
 
 import os
 
