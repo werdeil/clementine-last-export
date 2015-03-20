@@ -48,9 +48,9 @@ class Update_playcount(QtCore.QThread):
         
         if not self.input_file:
             info("No input file given, extracting directly from %s servers" %self.server)
-            lastexporter(self.server, self.username, self.startpage, self.extract_file, infotype='recenttracks', use_cache=self.use_cache, thread_signal=self.partDone)
+            lastexporter(self.server, self.username, self.startpage, self.extract_file, tracktype='recenttracks', use_cache=self.use_cache, thread_signal=self.partDone)
         self.partDone.emit(50)
-        
+   
         if self.backup:
             backup_db(self.db_path)
         self.partDone.emit(60)

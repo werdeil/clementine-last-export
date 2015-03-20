@@ -20,6 +20,9 @@
 import urllib2, urllib, time, re, os
 import xml.etree.ElementTree as ET
 
+import logging
+from logging import info, warning, error, debug
+
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
     """Connect to server and get a XML page.
     
@@ -50,7 +53,7 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
                     api_key='e38cc7822bd7476fe4083e36ee69748e',
                     user=username,
                     page=startpage,
-                    limit=50)
+                    limit=200)
     else:
         if server[:7] != 'http://':
             server = 'http://%s' % server
@@ -285,4 +288,8 @@ def lastexporter(server, username, startpage, outfile, tracktype='recenttracks',
 def test_parse_line():
     assert parse_line("text\tJohn Doe\tTrack 1\ttext") == ("John Doe", "Track 1")
     
+def test_get_tracks():
+    print get_tracks("last.fm", "werdeil")
+    assert (page, totalpages, tracks) == get_tracks("last.fm", "werdeil")
+
 
