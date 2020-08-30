@@ -18,19 +18,20 @@
 
 import os
 
-from PyQt4 import QtCore
-
 from optparse import OptionParser
+
 import logging
-from logging import info, warning, error, debug
+from logging import info
+
+from PyQt5 import QtCore
 
 from server_management import lastexporter
 from db_management import backup_db, update_db_file, get_dbpath
 
-class Import_loved_tracks(QtCore.QThread):
-    
+class ImportLovedTracks(QtCore.QThread):
+
     partDone = QtCore.pyqtSignal(int)
-    
+
     def __init__(self, username, input_file, server, extract_file, startpage, backup, force_update=True, use_cache=False):
         QtCore.QThread.__init__(self)
         self.username = username
@@ -42,21 +43,25 @@ class Import_loved_tracks(QtCore.QThread):
         self.force_update = force_update
         self.use_cache = use_cache
         self.db_path = get_dbpath()
-    
+
     def run(self):
         self.partDone.emit(0)
-        
+
         if not self.input_file:
             info("No input file given, extracting directly from %s servers" %self.server)
             lastexporter(self.server, self.username, self.startpage, self.extract_file, infotype='lovedtracks', use_cache=self.use_cache, thread_signal=self.partDone)
         self.partDone.emit(50)
-        
+
         if self.backup:
             backup_db(self.db_path)
         self.partDone.emit(51)
-        
-        info("Reading extract file and updating database")    
-        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %self.db_path), self.extract_file, self.force_update, updated_part="rating", thread_signal=self.partDone)
+
+        info("Reading extract file and updating database")
+        matched, not_matched, already_ok = update_db_file(os.path.expanduser("%s/clementine.db" %self.db_path),
+                                                                             self.extract_file,
+                                                                             self.force_update,
+                                                                             updated_part="rating",
+                                                                             thread_signal=self.partDone)
         info("%d entries have been updated, %d entries have already the correct note, no match was found for %d entries" %(len(matched), len(already_ok), len(not_matched)))
         self.partDone.emit(100)
 
@@ -77,12 +82,12 @@ if __name__ == "__main__":
     parser.add_option("-c", "--cache", dest="use_cache", default=False, action="store_true", help="use cache for import")
     parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
-    
+
     options, args = parser.parse_args()
     if options.verbose:
         logging.basicConfig(level="INFO")
     if options.debug:
         logging.basicConfig(level="DEBUG")
-        
-    thread = Import_loved_tracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup, options.use_cache)
+
+    thread = ImportLovedTracks(args[0], options.input_file, options.server, options.extract_file, options.startpage, options.backup, options.use_cache)
     thread.run()

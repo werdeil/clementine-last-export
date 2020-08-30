@@ -19,7 +19,8 @@
 Gui to run the clementine last export tool
 """
 
-from optparse import OptionParser
+from argparse import ArgumentParser
+
 import logging
 
 import clementine_last_export.gui
@@ -27,18 +28,17 @@ from clementine_last_export.gui import main
 
 if __name__ == "__main__":
 
-    parser = OptionParser()
-    parser.usage = """Usage: %prog [options]
-    
+    usage = """Usage: %prog [options]
     Run the GUI which will use the scripts of the package
     """
-    parser.add_option("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode")
-    parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode")
-    
+    parser = ArgumentParser()
+    parser.add_argument("-d", "--debug", dest="debug", default=False, action="store_true", help="debug mode", nargs='+')
+    parser.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true", help="activate verbose mode", nargs='+')
+
     options, args = parser.parse_args()
     if options.verbose:
         logging.basicConfig(level="INFO")
     if options.debug:
         logging.basicConfig(level="DEBUG")
-        
+
     main()

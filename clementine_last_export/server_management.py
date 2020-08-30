@@ -17,20 +17,22 @@
 
 """Module for exporting tracks through audioscrobbler API."""
 
-import urllib2, urllib, time, re, os
+import os
+import re
+import time
+import urllib
 import xml.etree.ElementTree as ET
 
-import logging
 from logging import info, warning, error, debug
 
 def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype='recenttracks'):
     """Connect to server and get a XML page.
-    
+
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
     :param startpage: Page of the server where to start the importation
     :param sleep_func: Function to be called to wait when the server is not responding
-    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'    
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'
     :type server: string
     :type username: string
     :type startpage: int
@@ -64,21 +66,21 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
                     page=startpage,
                     limit=200)
 
-    url = baseurl + urllib.urlencode(urlvars)
+    url = baseurl + urllib.parse.urlencode(urlvars)
     for interval in (1, 5, 10, 62):
         try:
-            f = urllib2.urlopen(url)
+            request_content = urllib.request.urlopen(url)
             break
-        except Exception, e:
-            last_exc = e
-            warning("Exception occurred, retrying in %d s: %s" % (interval, e))
+        except Exception as catched_exception:
+            last_exc = catched_exception
+            warning("Exception occurred, retrying in %d s: %s" % (interval, catched_exception))
             sleep_func(interval)
     else:
         error("Failed to open page %s" % urlvars['page'])
         raise last_exc
 
-    response = f.read()
-    f.close()
+    response = request_content.read()
+    request_content.close()
 
     #bad hack to fix bad xml
     response = re.sub('\xef\xbf\xbe', '', response)
@@ -86,9 +88,9 @@ def connect_server(server, username, startpage, sleep_func=time.sleep, tracktype
 
 def get_pageinfo(response, tracktype='recenttracks'):
     """Check how many pages of tracks the user have.
-    
+
     :param response: Xml page given by the server
-    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks' 
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'
     :type response: string
     :type tracktype: string
     :return: Number of total pages to import
@@ -100,19 +102,19 @@ def get_pageinfo(response, tracktype='recenttracks'):
 
 def get_tracklist(response):
     """Read XML page and get a list of tracks and their info.
-    
+
     :param response: Response from a request to the server (xml page of the server)
     :type response: string
     :return: list of tracks in the page
     :rtype: list
     """
     xmlpage = ET.fromstring(response)
-    tracklist = xmlpage.getiterator('track')
+    tracklist = xmlpage.iter('track')
     return tracklist
 
 def parse_track(trackelement):
     """Extract info from every track entry and output to list.
-    
+
     :param trackelement: xml element representing a track
     :type trackelement: xml.etree.ElementTree
     :return: List containing the date, title, artist and albumname corresponding to the track
@@ -143,9 +145,9 @@ def parse_track(trackelement):
 
 def write_tracks(tracks, outfileobj):
     """Write tracks to an open file
-    
+
     :param tracks: list of tracks, containing the fields to be written
-    :param outfileobj: File object in which the tracks will be written 
+    :param outfileobj: File object in which the tracks will be written
     :type tracks: list
     :type outfileobj: File
     :return: None
@@ -155,19 +157,19 @@ def write_tracks(tracks, outfileobj):
 
 def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='recenttracks', firsttrack = None):
     """Get tracks from a server
-    
+
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
     :param startpage: Page of the server where to start the importation
     :param sleep_func: Function to be called to wait when the server is not responding
-    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks' 
+    :param tracktype: Type of information to download from the server, can be either 'recentracks' or 'lovedtracks'
     :param firsttrack: track information corresponding the the last track imported in the previous import
     :type server: string
     :type username: string
     :type startpage: int
     :type sleep_func: function
     :type tracktype: string
-    :type firsttrack: list    
+    :type firsttrack: list
     """
     page = startpage
     response = connect_server(server, username, page, sleep_func, tracktype)
@@ -194,18 +196,18 @@ def get_tracks(server, username, startpage=1, sleep_func=time.sleep, tracktype='
                     break
                 else:
                     tracks.append(track)
-                
+
         yield page, totalpages, tracks
 
         page += 1
         sleep_func(.5)
-        
+
         if import_finished:
             break
 
 def parse_line(ligne):
     """Read an extracted line and return the artist and song part
-    
+
     :param ligne: Line from the server to parse
     :type ligne: string
     :return: The title and the artist included in the line
@@ -221,7 +223,7 @@ def parse_line(ligne):
 
 def lastexporter(server, username, startpage, outfile, tracktype='recenttracks', use_cache=False, thread_signal=None):
     """Function called to import the information from the server and store it in a dedicated file
-    
+
     :param server: Server on which the information will be extracted
     :param username: Username to use on the server
     :param startpage: Page of the server where to start the importation
@@ -251,11 +253,11 @@ def lastexporter(server, username, startpage, outfile, tracktype='recenttracks',
     else:
         firsttrack = None
         already_imported_lines = []
-        
+
     trackdict = dict()
     page = startpage  # for case of exception
     totalpages = -1  # ditto
-    n = 0
+    number = 0
     try:
         for page, totalpages, tracks in get_tracks(server, username, startpage, tracktype=tracktype, firsttrack=firsttrack):
             info("Got page %s of %s.." % (page, totalpages))
@@ -266,10 +268,10 @@ def lastexporter(server, username, startpage, outfile, tracktype='recenttracks',
                     trackdict.setdefault(track[0], track)
                 else:
                     #Can not use timestamp as key for loved/banned tracks as it's not unique
-                    n += 1
+                    number += 1
                     trackdict.setdefault(n, track)
-    except ValueError, e:
-        exit(e)
+    except ValueError as value_error:
+        exit(value_error)
     except Exception:
         raise
     finally:
@@ -277,19 +279,9 @@ def lastexporter(server, username, startpage, outfile, tracktype='recenttracks',
             tracks = sorted(trackdict.values(), reverse=True)
             write_tracks(tracks, outfileobj)
             info("Wrote page %s-%s of %s to file %s" % (startpage, page, totalpages, outfile))
-            
+
             for line in already_imported_lines:
                 outfileobj.write(line)
             if already_imported_lines != []:
                 info("Completed with already imported informations")
             outfileobj.close()
-
-#Test functions to be run with pytest
-def test_parse_line():
-    assert parse_line("text\tJohn Doe\tTrack 1\ttext") == ("John Doe", "Track 1")
-    
-def test_get_tracks():
-    print get_tracks("last.fm", "werdeil")
-    assert (page, totalpages, tracks) == get_tracks("last.fm", "werdeil")
-
-
